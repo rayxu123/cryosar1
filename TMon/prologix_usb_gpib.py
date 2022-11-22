@@ -27,11 +27,11 @@ class prologix_usb_gpib:
         # Initialize GPIB controller
         if not self.noConnect:
             if serialResourcePath:
-                # Resource name manually specified
+                # TODO: Resource name manually specified
                 s = serial.Serial(serialResourcePath, 9600, timeout=0.5)
             else:
                 pass
-                # Attempt to automatically find resource name
+                # TODO: Attempt to automatically find resource name
         
     # Add instrument into dictionary
     def addInstr(self, name, addr):
@@ -68,6 +68,10 @@ class prologix_usb_gpib:
         self.write(instrName, cmdWrite)
         time.sleep(wait)
         return self.read(maxReadBytes)
+        
+    # Close the serial object
+    def close(self)
+        if not self.noConnect: s.close()
         
     
     
