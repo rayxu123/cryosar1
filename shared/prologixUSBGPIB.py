@@ -2,7 +2,7 @@
 '''
 Ray Xu 
 Nov 2022
-cryosar1/TMon/prologix_usb_gpib.py
+cryosar1/TMon/prologixUSBGPIB.py
 
 Wrapper class for Prologix USB-GPIB module.
 
@@ -17,7 +17,7 @@ import serial.tools.list_ports
 import sys
 import time
 
-class prologix_usb_gpib:
+class prologixUSBGPIB:
     def __init__(self, noConnect=False, serialResourcePath=''):
         # Initialize state variables
         self.prevAddr = 32
