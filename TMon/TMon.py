@@ -10,6 +10,9 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
     QWidget,
+    QMainWindow,
+    QVBoxLayout,
+    QStatusBar
 )
 from PyQt5 import QtCore, QtGui
 
@@ -20,13 +23,19 @@ class Window(QWidget):
         QtGui.QFontDatabase.addApplicationFont('DSEG7Classic-Bold.ttf')
         self.setWindowTitle("QGridLayout Example")
         # Create a QGridLayout instance
-        layout = QGridLayout()
-        # Add widgets to the layout
+        layout = QVBoxLayout()
+        # Label widget
         self.labelObj = QLabel("W")
         self.labelObj.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(self.labelObj, 0, 0)
+        # Status bar
+        self.statusObj = QStatusBar()
+        self.statusObj.showMessage('Ready')
+        # Add widgets
+        layout.addWidget(self.labelObj, 1)
+        layout.addWidget(self.statusObj, 0)
         # Set the layout on the application's window
         self.setLayout(layout)
+        
         # Show window
         self.show()
         self.resize(120,120)
