@@ -59,7 +59,7 @@ class prologixUSBGPIB:
         if not self.noConnect: 
             strRead = s.read(maxBytes) 
         else: 
-            strRead="TEST\n"
+            strRead="9.9999999E3\n"
         return strRead[:-1]
         
     # Write then read with optional delay in between (in seconds)
