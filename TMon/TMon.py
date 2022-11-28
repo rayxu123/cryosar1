@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMainWindow,
     QVBoxLayout,
-    QStatusBar
+    QStatusBar,
+    QSizePolicy
 )
 from PyQt5 import QtCore, QtGui
 
@@ -30,12 +31,15 @@ class Window(QWidget):
         # Status bar
         self.statusObj = QStatusBar()
         self.statusObj.showMessage('Ready')
+        # Set minimum size policy
+        self.labelObj.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.labelObj.setMinimumHeight(100)
+        self.labelObj.setMinimumWidth(100)
         # Add widgets
         layout.addWidget(self.labelObj, 1)
         layout.addWidget(self.statusObj, 0)
         # Set the layout on the application's window
         self.setLayout(layout)
-        
         # Show window
         self.show()
         self.resize(120,120)
@@ -57,4 +61,15 @@ class Window(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Window()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_()) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
