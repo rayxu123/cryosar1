@@ -1,4 +1,5 @@
 #!/bin/python
+# Python 3.6 or greater
 '''
 Ray Xu 
 Nov 2022
@@ -23,21 +24,28 @@ class pandasWriter:
     # Inputs:
     # userComments: dictionary of metadata (see setComments routine for more details)
     # csvFilePathPrefix: name appended to output file name
-    def __init__(self, userComments={}, csvFilePrefix=''):
+    # enableIdx: set to True to add a column with a monotonic incrementing row number (starting at 0)
+    # maxRowsPerFile: maximum number of rows per csv file.  Once passed, the csv file is rotated: a new csv file is created (with the same basename) and the dataframe table is cleared, however idx keeps on incrementing
+    def __init__(self, userComments={}, csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536):
         # Create empty dataframe 
         self.df = pd.DataFrame()
+        self.idx = 0
+        self.fileNum = 0
+        self.enableIdx = enableIdx
+        self.maxRowsPerFile = maxRowsPerFile
         # Create system metadata dictionary
         # 'now' represents timestamp at which the python program was invoked.  Do not change this.
-        now = datetime.datetime.now()
-        now = now.strftime('%Y%m%d_T%H%M%S')
+        self.now = datetime.datetime.now()
+        self.now = self.now.strftime('%Y%m%d_T%H%M%S')
         # Set default csv file output path
-        self.csvFilePath = "./output/run_"+csvFilePrefix+"_"+now+".csv"
+        self.csvFilePrefix = csvFilePrefix
+        self.csvFilePath = "./output/run_"+self.csvFilePrefix+"_"+self.now+"_file"+str(self.fileNum)+".csv"
         try:
             source = __main__.__file__
         except AttributeError:
             source = "(none)"
         self.metadata = {
-            'start_YYMMDD_THHMMSS': now,
+            'start_YYMMDD_THHMMSS': self.now,
             'source': source,
             'target': self.csvFilePath
         }
@@ -51,18 +59,31 @@ class pandasWriter:
     # Reserved keywords: 'start_YYMMDD_THHMMSS', 'source', 'target'.  
     # If userComments contains any reserved keywords, the values will be overwritten by userComments
     def setComments(self, userComments):
-        self.comments = self.metadata | userComments
+        self.comments = self.__merge(self.metadata, userComments)
         
             
     # Appends a row of data into the dataframe. 
-    # Input: dict with keys as column names and values as data to be inserted
+    # Input: dict with keys (str datatype) representing column names and the values (any datatype) representing data to be inserted
     def appendData(self, mydict, flush=True):
+        # Append idx row:
+        if self.enableIdx:
+            mydict_idx = {"idx": self.idx}
+            self.idx = self.idx + 1
+            mydict = self.__merge(mydict_idx, mydict)
+        # New data is always appended to the end of the dataframe table
         mydict_df = pd.DataFrame([mydict])
         self.df = pd.concat([self.df, mydict_df], ignore_index=True)
         if flush: self.writeCSV()
-        
-        
-    # Writes to CSV specified by self.csvFilePath
+        # Check if csv file needs to be rotated:
+        if self.df.shape[0] >= self.maxRowsPerFile:
+            self.writeCSV()
+            self.fileNum = self.fileNum + 1
+            self.csvFilePath = "./output/run_" + self.csvFilePrefix + "_" + self.now + "_file" + str(self.fileNum) + ".csv"
+            self.df = pd.DataFrame()
+
+
+
+    # Writes and flushes to CSV specified by self.csvFilePath
     def writeCSV(self):
         # Check if folder exists
         filepath = Path(self.csvFilePath)  
@@ -71,11 +92,14 @@ class pandasWriter:
         self.df.to_csv(self.csvFilePath+".gz", mode="w", index=False, compression="gzip")
         # Write metadata
         comments_str = '\n'.join([f'{key} = {value}' for key, value in self.comments.items()])
-        with open(self.csvFilePath+".metadata", "w") as f:
+        with open(self.csvFilePath+".metatxt", "w") as f:
             f.write(comments_str)
             f.close()
 
-        
+    # Internal method to merge two dictionaries
+    def __merge(self, dict1, dict2):
+        res = {**dict1, **dict2}
+        return res
         
     
     

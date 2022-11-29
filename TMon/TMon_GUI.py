@@ -1,4 +1,5 @@
-#!/bin/python
+#!/bin/python3
+# Python 3.6 or greater
 
 
 
