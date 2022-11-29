@@ -34,8 +34,8 @@ class prologixUSBGPIB:
         # Initialize instrument list
         self.instrList = {}
         # Initialize GPIB controller
+        self.s = None
         if not self.noConnect:
-            self.s = None
             if serialNumber:
                 devices = serial.tools.list_ports.comports()
                 for d in devices:
@@ -57,16 +57,14 @@ class prologixUSBGPIB:
             cmd = '++mode 1'
             self.s.write((cmd + "\n").encode())
             if self.verbose: print("SERIAL: WRITE " + str((cmd + "\n").encode()))
-            self.s.read(256)    # Clear buffer
             # Initialize prologix controller: set addr
             self.s.write(("++addr "+str(self.prevAddr)+"\n").encode())
             if self.verbose: print("SERIAL: WRITE " + str(("++addr "+str(self.prevAddr)+"\n").encode()))
-            self.s.read(256)  # Clear buffer
             # Initialize prologix controller: set auto
             cmd = '++auto 1'
             self.s.write((cmd + "\n").encode())
             if self.verbose: print("SERIAL: WRITE " + str((cmd + "\n").encode()))
-            self.s.read(256)  # Clear buffer
+            self.resetBuffers()  # Clear buffer
 
 
         
@@ -87,7 +85,7 @@ class prologixUSBGPIB:
             if not self.noConnect: self.s.write(("++addr "+str(instrAddr)+"\n").encode())
             if self.verbose: print("SERIAL: WRITE " + str(("++addr "+str(instrAddr)+"\n").encode()))
             self.prevAddr = instrAddr
-            self.s.read(256)  # Clear buffer
+            self.resetBuffers()
         # Write command
         if not self.noConnect:
             nBytes = self.s.write((cmd+"\n").encode())-1
@@ -102,7 +100,7 @@ class prologixUSBGPIB:
         if not self.noConnect: 
             strRead = self.s.read(maxBytes)
         else: 
-            strRead="+9.9999999E3\r\n".encode()
+            strRead="+999.999E3\r\n".encode()
         if self.verbose: print("SERIAL: READ " + str(strRead))
         # Cast bytes to string and remove any CRLF
         strRead = strRead.decode()
@@ -125,6 +123,9 @@ class prologixUSBGPIB:
         if not self.noConnect:
             self.s.reset_output_buffer()
             self.s.reset_input_buffer()
+            # Reset hardware input buffer
+            while len(self.s.read()) > 0:
+                pass
         
     
     
