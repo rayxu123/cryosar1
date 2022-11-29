@@ -1,26 +1,34 @@
 #!/bin/python3
 # Python 3.6 or greater
+'''
+Ray Xu
+Nov 2022
+cryosar1/TMon/TMon_GUI.py
 
+GUI for TMon.py
+
+Requires the packages:
+ - pyqt5
+ - pyserial
+ - pandas
+'''
 
 
 import sys
-import time
 
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (
     QApplication,
-    QGridLayout,
     QLabel,
     QWidget,
-    QMainWindow,
     QVBoxLayout,
     QStatusBar,
     QSizePolicy
 )
-from PyQt5 import QtCore, QtGui
 
 
-class Window(QWidget):
-    def __init__(self):
+class TMon_GUI(QWidget):
+    def __init__(self, args):
         super().__init__()
         QtGui.QFontDatabase.addApplicationFont('DSEG7Classic-Bold.ttf')
         self.setWindowTitle("QGridLayout Example")
@@ -59,10 +67,10 @@ class Window(QWidget):
         print("Bye!")
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = Window()
-    sys.exit(app.exec_()) 
+#if __name__ == "__main__":
+#    app = QApplication(sys.argv)
+#    window = Window()
+#    sys.exit(app.exec_())
     
     
     
