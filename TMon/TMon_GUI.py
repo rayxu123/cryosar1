@@ -65,7 +65,10 @@ class TMon_GUI(QWidget):
         self.gpib.write("hp3458a", "TRIG HOLD")     # Pause data taking otherwise gpib input buffer will be filled
         self.gpib.resetBuffers()
         self.gpibid = self.gpib.query("hp3458a","ID?")
-        self.gpib.write("hp3458a", "OHM 200")
+        if self.args.twowire:
+            self.gpib.write("hp3458a", "OHM 200")
+        else:
+            self.gpib.write("hp3458a", "OHMF 200")
         self.gpib.query("hp3458a", "TRIG SGL")
         self.gpib.resetBuffers()
         ## Initialize pandas
@@ -93,20 +96,21 @@ class TMon_GUI(QWidget):
             self.measure = True
             # Take timestamp in seconds since epoch (Jan 1, 1970 00:00:00 UTC)
             self.now = float(time.time())
+            ### Commented out so to not wear out relays
             # Take instrument temp
-            self.instrTemp = float(self.gpib.query("hp3458a", "TEMP?"))
-            # Take 4 ohm resistance
+            #self.instrTemp = float(self.gpib.query("hp3458a", "TEMP?"))
+            ###
+            self.instrTemp = float("nan")
+            ###
+            # Take resistance
             self.gpib.write("hp3458a", "MATH OFF")
-            self.gpib.write("hp3458a", "OHMF 200")
-            self.ohm4 = float(self.gpib.query("hp3458a", "TRIG SGL"))
-            # Take 2 ohm resistance
-            self.gpib.write("hp3458a", "OHM 200")
-            self.ohm2 = float(self.gpib.query("hp3458a", "TRIG SGL"))
-            # Take temperature sensor reading
             if self.args.twowire:
-                self.gpib.write("hp3458a", "OHM 200")
+                self.ohm2 = float(self.gpib.query("hp3458a", "TRIG SGL"))
+                self.ohm4 = float("nan")
             else:
-                self.gpib.write("hp3458a", "OHMF 200")
+                self.ohm2 = float("nan")
+                self.ohm4 = float(self.gpib.query("hp3458a", "TRIG SGL"))
+            # Take temperature sensor reading
             self.gpib.write("hp3458a", "MATH CRTD85")
             self.sensorTemp = float(self.gpib.query("hp3458a", "TRIG SGL"))
             # Save data
