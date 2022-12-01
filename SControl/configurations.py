@@ -9,6 +9,11 @@ Implements digital slow-control via INI-like configuration files.
 
 Requires the packages:
  - python3-bitstring (via system package manager)
+
+
+
+ - libusb (via system package manager)
+ - pyftdi (see manual for installation and setup instructions)
 '''
 
 import os, sys

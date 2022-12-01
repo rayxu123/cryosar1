@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Stand-alone real-time temperature and data logging with the HP 3458A and a 100 Ohm RTD (alpha=0.85) sensor.')
     parser.add_argument('-a', dest='addr', action='store', default=22, help="GPIB address.  (Default: 22)")
     parser.add_argument('-2', dest='twowire', action='store_true', help="Use 2-wire sensing.  (Default: False)", default=False)
-    parser.add_argument('-o', dest='enableOutfile', action='store_false', default=True, help="Enable data logging.  (Default: True)")
+    parser.add_argument('-o', dest='disableOutfile', action='store_false', default=True, help="Disable data logging.  (Default: True)")
     parser.add_argument('-f', dest='filenamePrefix', action='store', default='',
                         help="Filename Prefix, use only with -o.  (Default: None)")
     parser.add_argument('-c', dest='userComments', action='store', default='',
