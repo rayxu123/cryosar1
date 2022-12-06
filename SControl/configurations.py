@@ -9,11 +9,6 @@ Implements digital slow-control via INI-like configuration files.
 
 Requires the packages:
  - python3-bitstring (via system package manager)
-
-
-
- - libusb (via system package manager)
- - pyftdi (see manual for installation and setup instructions)
 '''
 
 import os, sys
@@ -27,12 +22,14 @@ class configurations:
     # Initializes the class from a INI-like configuration file.  The file must contain a category 'Default' with key 'order'.
     # 'order' is a comma separated list of other section names, which are called fields.  The order of comma-separated elements are MSB to LSB.
     #
+    # All binary bit strings are zero-extended where needed.
+    #
     # Each field has the following keys: width (int, number of bits in this field), value (string of bits, from MSB to LSB), type (string), and label (string).  Type can be any of the following:
     #   'bool' -> GUI: checkbox
     #   'int' -> GUI: QSpinBox
-    #   'bitstring' -> GUI: QPlainTextEdit
+    #   'bitstring' -> GUI: QLineEdit.
     #   'enum' -> GUI: QComboBox
-    #   'none' (or any other type not listed) -> GUI: hidden
+    #   'none' (or any other type not listed) -> GUI: QLineEdit but cannot be edited
     # Label is a string that describes the field, purely for GUI purposes.
     # For type 'enum', there is an additional key 'options' which is a comma-separated string that list the enumerated values from the minimum index to the maximum index.
     #
@@ -42,6 +39,12 @@ class configurations:
         self.cfg = configparser.ConfigParser()
         self.cfg.read(self.cfgFile)
         self.order = self.cfg['Default']['order'].split(",")
+        self.__update()
+
+    # Update class attributes containing lists of configuration items.
+    # Useful for direct access in another class.
+    def __update(self):
+        self.fieldList, self.widthList, self.valueList, self.typeList, self.labelList = self.get()
 
     # Checks for input sanity.
     # Input: val (string of bits), width (int)
@@ -74,6 +77,7 @@ class configurations:
     def set(self, fieldList, valueList):
         for field,value in zip(fieldList, valueList):
             self.cfg[field]['value'] = self.check(value, int(self.cfg[field]['width']))
+        self.__update()
 
     # Gets values for enumerated objects
     # Input: field name
@@ -107,6 +111,7 @@ class configurations:
         otherCfg.read(otherCfgFile)
         for field in self.order:
             self.cfg[field]['value'] = self.check(otherCfg[field]['value'], int(self.cfg[field]['width']))
+        self.__update()
 
     # Writes current config to file.  For safety one cannot overwrite the cfg file the class was initialized with.
     # Input: path to file
