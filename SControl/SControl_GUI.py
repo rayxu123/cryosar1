@@ -15,6 +15,7 @@ Requires the packages:
 '''
 
 import sys
+import os
 import time
 import math
 from PyQt5 import QtCore, QtGui
@@ -36,7 +37,7 @@ class SControl_GUI(QMainWindow):
         # Populate GUI
         self.setCentralWidget(self.populateGUI())
         # Set up file path
-        self.filepathWidget.setText(self.args.cfgFile)
+        self.filepathWidget.setText(os.path.abspath(self.args.cfgFile))
         self.resize(100, 100)
 
 
@@ -212,10 +213,10 @@ class SControl_GUI(QMainWindow):
         fieldtype = self.cfg.typeList[ptr]
         menuObj = self.menuList[ptr]
         if fieldtype == "bool":
-            if value == 1:
-                menuObj.setCheckState(True)
+            if value == '1':
+                menuObj.setChecked(True)
             else:
-                menuObj.setCheckState(False)
+                menuObj.setChecked(False)
         elif fieldtype == "int":
             value_uint = BitArray(bin=value).uint
             menuObj.setValue(value_uint)
@@ -248,12 +249,24 @@ class SControl_GUI(QMainWindow):
 
     # Prompts user to browse and saves current configuration to a file
     def saveCfg(self):
-        print("Save")
-        return None
+        fileName = QFileDialog.getSaveFileName(self, "Save Config")
+        if fileName[0] is not '':
+            try:
+                self.cfg.writeToFile(fileName[0])
+            except ValueError:
+                print("Cannot overwrite initial cfg!  Configurations did not save.")
+                return None
+            self.filepathWidget.setText(os.path.abspath(fileName[0]))
 
     # Prompts user to browse and loads cfg from file
     def loadCfg(self):
-        print("Load")
+        fileName = QFileDialog.getOpenFileName(self, "Open Config")
+        if fileName[0] is not '':
+            self.cfg.setFromFile(fileName[0])
+            self.filepathWidget.setText(os.path.abspath(fileName[0]))
+        # Synchronize GUI elements to configurations state
+        for ptr in self.ptrList:
+            self.setMenuElement(ptr, self.cfg.valueList[ptr])
         return None
 
     # Reads from FTDI SPI
