@@ -272,6 +272,8 @@ class SControl_GUI(QMainWindow):
     # Reads from FTDI SPI
     def ftdiRead(self):
         print("Read")
+        # Program all-zeros in order to shift out the bits
+
         return None
 
     # Programs FTDI SPI using current configurations state
