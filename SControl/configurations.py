@@ -28,6 +28,7 @@ class configurations:
     #   'bool' -> GUI: checkbox
     #   'int' -> GUI: QSpinBox
     #   'bitstring' -> GUI: QLineEdit.
+    #   'hidden' -> GUI: QLineEdit but is not visible nor accessible to the user
     #   'enum' -> GUI: QComboBox
     #   'none' (or any other type not listed) -> GUI: QLineEdit but cannot be edited
     # Label is a string that describes the field, purely for GUI purposes.
@@ -72,11 +73,10 @@ class configurations:
         return fieldList,widthList,valueList,typeList,labelList
 
     # Sets a value to a field
-    # Input: list of field(s), list of value(s).  List elements are of type strings.
+    # Input: field and value to set for the field.  List elements are of type strings.
     # Return: none
-    def set(self, fieldList, valueList):
-        for field,value in zip(fieldList, valueList):
-            self.cfg[field]['value'] = self.check(value, int(self.cfg[field]['width']))
+    def set(self, field, value):
+        self.cfg[field]['value'] = self.check(value, int(self.cfg[field]['width']))
         self.__update()
 
     # Gets values for enumerated objects

@@ -30,15 +30,19 @@ class SControl_GUI(QMainWindow):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        # Initiate hardware
-        self.spi = ftdispi.ftdispi(self.args.addr, self.args.noConnect)
         # Initiate configurations
         self.cfg = configurations.configurations(self.args.cfgFile)
+        self.cfgPrevBits = self.cfg.toBits()    # Used in determining which menu items to highlight
         # Populate GUI
         self.setCentralWidget(self.populateGUI())
         # Set up file path
         self.filepathWidget.setText(os.path.abspath(self.args.cfgFile))
         self.resize(100, 100)
+        # Initiate hardware
+        self.spi = ftdispi.ftdispi(self.args.addr, self.args.noConnect)
+        # TODO: flush shift register using length of configurations
+        # TODO: initial programming
+        
 
 
 
@@ -65,7 +69,11 @@ class SControl_GUI(QMainWindow):
                 # Check for under-filled column
                 if ptr < self.cfg.numFields():
                     # Add label object
+                    fieldtype = self.cfg.typeList[ptr]
                     labelObj = QLabel(self.cfg.labelList[ptr])
+                    # Hide this field otherwise it will show up with a label but no field
+                    if fieldtype == "hidden":
+                        labelObj.hide()
                     # Add menu item
                     menuObj = self.makeMenuElement(ptr)
                     # Add objects into list
@@ -144,7 +152,7 @@ class SControl_GUI(QMainWindow):
             menuObj.setMaximum(int((2**width)-1))
             menuObj.valueChanged.connect(lambda: self.guiStateChanged())
             menuObj.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-            menuObj.setMinimumWidth(12 * len(str((2**width)-1)))  # Set a minimum width for the field, assuming 12 px font ...
+            menuObj.setMinimumWidth(12 * (len(str((2**width)-1))+3))  # Set a minimum width for the field, assuming 12 px font ...  Add additional size for the up/down buttons that is part of QSpinBox.
         elif fieldtype == "bitstring":
             menuObj = QLineEdit(self)
             menuObj.setValidator(validator)
@@ -158,6 +166,10 @@ class SControl_GUI(QMainWindow):
             menuObj.currentIndexChanged.connect(lambda: self.guiStateChanged())
             menuObj.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
             menuObj.setMinimumWidth(12 * max([len(i) for i in self.cfg.getEnum(field)]))  # Set a minimum width for the field, assuming 12 px font ...
+        elif fieldtype == "hidden":
+            menuObj = QLineEdit(self)
+            menuObj.setReadOnly(True)
+            menuObj.hide()
         else:
             menuObj = QLineEdit(self)
             menuObj.setValidator(validator)
@@ -198,6 +210,12 @@ class SControl_GUI(QMainWindow):
             value = menuObj.currentIndex()
             value = BitArray(uint=value, length=width)
             return value.bin
+        elif fieldtype == "hidden":
+            value = menuObj.text()
+            # Zero extend where appropriate
+            value = BitArray(bin=value).uint
+            value = BitArray(uint=value, length=width)
+            return value.bin
         else:
             value = menuObj.text()
             # Zero extend where appropriate
@@ -225,26 +243,41 @@ class SControl_GUI(QMainWindow):
         elif fieldtype == "enum":
             value_uint = BitArray(bin=value).uint
             menuObj.setCurrentIndex(value_uint)
+        elif fieldtype == "hidden":
+            menuObj.setText(value)
         else:
             menuObj.setText(value)
         return None
 
     # Highlights a manu item if value is True.  Otherwise, it restores it to system defaults.
-    # Input: ptr (int) index of the menu item, value (boolean) whether to highlight or restore
-    def highlightMenuElement(self, ptr, value):
+    # Input: ptr (int) index of the menu item, value (boolean) whether to highlight or restore, and level of severity (warn or error)
+    def highlightMenuElement(self, ptr, value, level="warn"):
         labelObj = self.labelList[ptr]
         if value:
-            labelObj.setStyleSheet("background-color: yellow; ")
+            if level == "warn":
+                labelObj.setStyleSheet("background-color: yellow; ")
+            elif level == "error":
+                labelObj.setStyleSheet("background-color: red; ")
         else:
             labelObj.setStyleSheet("")
 
     # What to do if a GUI item state has changed.
-    # Highlight menu item if current selection is different from configurations
+    # Synchronize configurations state to GUI state
+    # Highlight menu item if current selection differs from previously programmed bits
     def guiStateChanged(self):
+        # Synchronize configurations state to GUI state
         for ptr in self.ptrList:
             menuValue = self.getMenuElement(ptr)
             cfgValue = self.cfg.valueList[ptr]
-            self.highlightMenuElement(ptr, menuValue != cfgValue)
+            
+            if menuValue != cfgValue:
+                # Flush to configurations class
+                self.cfg.set(self.cfg.fieldList[ptr], menuValue)
+        # Highlight menu items where they are different from the previously programmed bits.
+        # Do this comparison after configurations state has been synchronized
+        diffFields = self.cfg.compare(self.cfgPrevBits)
+        for ptr in self.ptrList:
+            self.highlightMenuElement(ptr, not diffFields[ptr], level="warn")
         return None
 
     # Prompts user to browse and saves current configuration to a file
@@ -273,17 +306,22 @@ class SControl_GUI(QMainWindow):
     def ftdiRead(self):
         print("Read")
         # Program all-zeros in order to shift out the bits
-
+        print("Not yet implemented!")
         return None
 
     # Programs FTDI SPI using current configurations state
     def ftdiProg(self):
         print("Program")
+        # Clear highlights from changing menu items
+        self.cfgPrevBits = self.cfg.toBits()
+        for ptr in self.ptrList:
+            self.highlightMenuElement(ptr, False)
         return None
 
     # Verifies FTDI SPI against current configurations state
     def ftdiVerify(self):
         print("Verify")
+        print("Not yet implemented!")
         return None
 
 

@@ -46,13 +46,19 @@ class ftdispi:
             # Format inStr to the nearest byte alignment
             inLen = len(inStr)
             byteLen = self.RoundUp8(inLen)
-            bitsWr = BitArray(uint=BitArray(bin=inStr).uint,length=byteLen)
+            # It appears that the pyftdi module outputs LSB first.  Reverse it before zero extension
+            bitsWr = BitArray(bin=inStr).reverse()
+            bitsWr = BitArray(uint=bitsWr.uint,length=byteLen)
+            bitsWr.reverse()
             dropLen = int(byteLen - inLen)
             # SPI transaction
             bitsRead = self.spi.exchange(out=bitsWr.bytes, readlen=int(byteLen/8), start=True, stop=True, duplex=True, droptail=dropLen)
             # Format read data to a binary string and match the length of inStr
             bitsRead = BitArray(bytes=bitsRead)
-            return bitsRead.bin[:-dropLen]
+            # It appears that the pyftdi module outputs LSB first.  Reverse it after dropping zeros
+            bitsRead = bitsRead.bin[:-dropLen]
+            bitsRead = bitsRead.reverse()
+            return bitsRead.bin
         else:
             return inStr
 
