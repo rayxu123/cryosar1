@@ -39,25 +39,23 @@ class ftdispi:
         return ((x + 7) & (-8))
 
     # Perform full-duplex write and read
+    # Length of inStr must be in multiples of 8 bits!  (Byte level boundaries)  droptail capability not yet implemented.
     # Input: string of bits to write, MSB first
     # Output: string of bits read out.  Output is same length as what was written
     def query(self, inStr):
+        if (len(inStr) % 8 != 0):
+            raise ValueError("Input bitstring must be integer bytes long.")
         if not self.noConnect:
-            # Format inStr to the nearest byte alignment
-            inLen = len(inStr)
-            byteLen = self.RoundUp8(inLen)
-            # It appears that the pyftdi module outputs LSB first.  Reverse it before zero extension
-            bitsWr = BitArray(bin=inStr).reverse()
-            bitsWr = BitArray(uint=bitsWr.uint,length=byteLen)
-            bitsWr.reverse()
-            dropLen = int(byteLen - inLen)
+            # It appears that the pyftdi module outputs LSB first.  Reverse it.
+            # TODO: Check FTDSPI endianness
+            bitsWr = BitArray(bin=inStr)
+            #bitsWr.reverse()
             # SPI transaction
-            bitsRead = self.spi.exchange(out=bitsWr.bytes, readlen=int(byteLen/8), start=True, stop=True, duplex=True, droptail=dropLen)
-            # Format read data to a binary string and match the length of inStr
+            bitsRead = self.spi.exchange(out=bitsWr.bytes, readlen=int(bitsWr.len/8), start=True, stop=True, duplex=True, droptail=0)
+            # Format read data to a binary string
             bitsRead = BitArray(bytes=bitsRead)
-            # It appears that the pyftdi module outputs LSB first.  Reverse it after dropping zeros
-            bitsRead = bitsRead.bin[:-dropLen]
-            bitsRead = bitsRead.reverse()
+            # It appears that the pyftdi module outputs LSB first.  Reverse it 
+            #bitsRead.reverse()
             return bitsRead.bin
         else:
             return inStr

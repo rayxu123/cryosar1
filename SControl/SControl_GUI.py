@@ -40,18 +40,38 @@ class SControl_GUI(QMainWindow):
         self.resize(100, 100)
         # Initiate hardware
         self.spi = ftdispi.ftdispi(self.args.addr, self.args.noConnect)
-        # TODO: flush shift register using length of configurations
-        # TODO: initial programming
+        # Flush shift register.  Program in a bit string of length that is equal to or greater than the shift register size.  Discard the output.
+        bitlen = len(self.cfg.toBits())
+        flushBits = BitArray(uint=0,length=bitlen)
+        self.spi.query(flushBits.bin)
+        # Initial programming.  
+        # A 'query' is a full-duplex, atomic transaction.  It programs in the bits and reads back the bits that were there previously.
+        # So to program and read back the bits, do two queries back to back:
+        # the first query programs the bits and reads back the previous bits (which could be garbage)
+        # The second query programs the same bits and reads back the bits from the first query (which should be valid) 
+        returnBits = self.spi.query(self.cfg.toBits())
+        returnBits = self.spi.query(self.cfg.toBits())
+        # Check if the read back is valid
+        compare = self.cfg.compare(returnBits)
+        if False in compare:
+            self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
         
 
+    def showError(self, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(message)
+        msg.setWindowTitle("Error")
+        msg.exec_()
 
 
     def populateGUI(self):
         ## Populates GUI according to configuration items.  Everything is nested inside a single QGridLayout.
+        # Aspect ratio: approximate number of rows to number of columns
+        aspectRatio = 3
         ## Get number of rows and columns needed to populate menu items.  Each row,col represents a pair of QLabel and a QSpinBox/QPlainTextEdit/QCheckBox/QComboBox item.
-        numMenuRows = int(math.ceil(math.sqrt(self.cfg.numFields())))
-        # 1:1 row:col aspect ratio
-        numMenuCols = numMenuRows
+        numMenuRows = int(math.ceil(math.sqrt(self.cfg.numFields())*aspectRatio))
+        numMenuCols = int(math.ceil(numMenuRows))
         ## Main GUI widget: QGridLayout
         mainWidget = QWidget()
         mainWidget.setLayout(QGridLayout())
@@ -152,20 +172,20 @@ class SControl_GUI(QMainWindow):
             menuObj.setMaximum(int((2**width)-1))
             menuObj.valueChanged.connect(lambda: self.guiStateChanged())
             menuObj.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-            menuObj.setMinimumWidth(12 * (len(str((2**width)-1))+3))  # Set a minimum width for the field, assuming 12 px font ...  Add additional size for the up/down buttons that is part of QSpinBox.
+            menuObj.setMinimumWidth(10 * (len(str((2**width)-1))+3))  # Set a minimum width for the field, assuming 12 px font ...  Add additional size for the up/down buttons that is part of QSpinBox.
         elif fieldtype == "bitstring":
             menuObj = QLineEdit(self)
             menuObj.setValidator(validator)
             menuObj.setMaxLength(width)
             menuObj.textChanged.connect(lambda: self.guiStateChanged())
             menuObj.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-            menuObj.setMinimumWidth(12 * width)  # Set a minimum width for the field, assuming 12 px font ...
+            menuObj.setMinimumWidth(10 * width)  # Set a minimum width for the field, assuming 12 px font ...
         elif fieldtype == "enum":
             menuObj = QComboBox(self)
             menuObj.addItems(self.cfg.getEnum(field))
             menuObj.currentIndexChanged.connect(lambda: self.guiStateChanged())
             menuObj.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
-            menuObj.setMinimumWidth(12 * max([len(i) for i in self.cfg.getEnum(field)]))  # Set a minimum width for the field, assuming 12 px font ...
+            menuObj.setMinimumWidth(10 * max([len(i) for i in self.cfg.getEnum(field)]))  # Set a minimum width for the field, assuming 12 px font ...
         elif fieldtype == "hidden":
             menuObj = QLineEdit(self)
             menuObj.setReadOnly(True)
@@ -177,7 +197,7 @@ class SControl_GUI(QMainWindow):
             menuObj.setReadOnly(True)
             #menuObj.setEnabled(False)
             menuObj.textChanged.connect(lambda: self.guiStateChanged())
-            menuObj.setMinimumWidth(12*width)       # Set a minimum width for the field, assuming 12 px font ...
+            menuObj.setMinimumWidth(10*width)       # Set a minimum width for the field, assuming 12 px font ...
             # To distinguish read only
             menuObj.setStyleSheet("background-color: silver; font-style: italic;")
         return menuObj
@@ -316,6 +336,15 @@ class SControl_GUI(QMainWindow):
         self.cfgPrevBits = self.cfg.toBits()
         for ptr in self.ptrList:
             self.highlightMenuElement(ptr, False)
+        # Program.  See the class initializer function for more info.
+        returnBits = self.spi.query(self.cfg.toBits())
+        returnBits = self.spi.query(self.cfg.toBits())
+        # Check if the read back is valid
+        compare = self.cfg.compare(returnBits)
+        if False in compare:
+            self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
+        for ptr in self.ptrList:
+            self.highlightMenuElement(ptr, not compare[ptr], level="error")
         return None
 
     # Verifies FTDI SPI against current configurations state
