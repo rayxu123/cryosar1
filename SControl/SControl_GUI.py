@@ -25,6 +25,7 @@ from PyQt5.QtWidgets import *
 import configurations
 import ftdispi
 from bitstring import BitArray
+import configparser
 
 class SControl_GUI(QMainWindow):
     def __init__(self, args):
@@ -52,7 +53,7 @@ class SControl_GUI(QMainWindow):
         returnBits = self.spi.query(self.cfg.toBits())
         returnBits = self.spi.query(self.cfg.toBits())
         # Check if the read back is valid
-        compare = self.cfg.compare(returnBits)
+        compare = self.cfg.compare(returnBits)[0]
         if False in compare:
             self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
         
@@ -71,7 +72,7 @@ class SControl_GUI(QMainWindow):
         aspectRatio = 3
         ## Get number of rows and columns needed to populate menu items.  Each row,col represents a pair of QLabel and a QSpinBox/QPlainTextEdit/QCheckBox/QComboBox item.
         numMenuRows = int(math.ceil(math.sqrt(self.cfg.numFields())*aspectRatio))
-        numMenuCols = int(math.ceil(numMenuRows))
+        numMenuCols = numMenuRows
         ## Main GUI widget: QGridLayout
         mainWidget = QWidget()
         mainWidget.setLayout(QGridLayout())
@@ -104,8 +105,9 @@ class SControl_GUI(QMainWindow):
                     self.setMenuElement(ptr, self.cfg.valueList[ptr])
                     # Add objects into layout
                     formLayout.addRow(labelObj, menuObj)
-            # Add form layout into main widget
-            mainLayout.addLayout(formLayout, 0, 2*i)
+            if formLayout.rowCount() > 0:
+                # Add form layout into main widget
+                mainLayout.addLayout(formLayout, 0, 2*i)
             # Construct a vertical line (the same widget cannot have multiple parents, hence this widget is generated dynamically in this loop
             # Only put a vline if another column will be added
             if ptr < self.cfg.numFields():
@@ -137,7 +139,7 @@ class SControl_GUI(QMainWindow):
         self.filepathWidget.setStyleSheet("background-color: silver; font-style: italic;")
         mainLayout.addWidget(self.filepathWidget, 3, 0, 1, -1)
         ### FTDI buttons
-        self.readBtn = QPushButton("&Read")
+        self.readBtn = QPushButton("&Read (Overwrite)")
         self.progBtn = QPushButton("&Program")
         self.verifyBtn = QPushButton("&Verify")
         self.readBtn.clicked.connect(self.ftdiRead)
@@ -201,8 +203,6 @@ class SControl_GUI(QMainWindow):
             # To distinguish read only
             menuObj.setStyleSheet("background-color: silver; font-style: italic;")
         return menuObj
-
-
 
     # Accesses a GUI menu item and returns its value
     # Input: ptr (int), index of the menu item in the configurations class lists
@@ -289,15 +289,15 @@ class SControl_GUI(QMainWindow):
         for ptr in self.ptrList:
             menuValue = self.getMenuElement(ptr)
             cfgValue = self.cfg.valueList[ptr]
-            
             if menuValue != cfgValue:
                 # Flush to configurations class
                 self.cfg.set(self.cfg.fieldList[ptr], menuValue)
         # Highlight menu items where they are different from the previously programmed bits.
         # Do this comparison after configurations state has been synchronized
-        diffFields = self.cfg.compare(self.cfgPrevBits)
+        diffFields = self.cfg.compare(self.cfgPrevBits)[0]
         for ptr in self.ptrList:
-            self.highlightMenuElement(ptr, not diffFields[ptr], level="warn")
+            if diffFields[ptr] is False:
+                self.highlightMenuElement(ptr, True, level="warn")
         return None
 
     # Prompts user to browse and saves current configuration to a file
@@ -315,23 +315,25 @@ class SControl_GUI(QMainWindow):
     def loadCfg(self):
         fileName = QFileDialog.getOpenFileName(self, "Open Config")
         if fileName[0] is not '':
-            self.cfg.setFromFile(fileName[0])
+            fields, values = self.cfg.readFromFile(fileName[0])
             self.filepathWidget.setText(os.path.abspath(fileName[0]))
-        # Synchronize GUI elements to configurations state
-        for ptr in self.ptrList:
-            self.setMenuElement(ptr, self.cfg.valueList[ptr])
+            # Synchronize GUI elements to configurations state
+            for ptr in self.ptrList:
+                self.setMenuElement(ptr, values[ptr])
+            diffFields = self.cfg.compare(self.cfgPrevBits)[0]
+            for ptr in self.ptrList:
+                self.highlightMenuElement(ptr, not diffFields[ptr], level="warn")
         return None
 
     # Reads from FTDI SPI
     def ftdiRead(self):
-        print("Read")
-        # Program all-zeros in order to shift out the bits
-        print("Not yet implemented!")
+        readBitsList = self.ftdiVerify()
+        for ptr in self.ptrList:
+            self.setMenuElement(ptr, readBitsList[ptr])
         return None
 
     # Programs FTDI SPI using current configurations state
     def ftdiProg(self):
-        print("Program")
         # Clear highlights from changing menu items
         self.cfgPrevBits = self.cfg.toBits()
         for ptr in self.ptrList:
@@ -340,18 +342,32 @@ class SControl_GUI(QMainWindow):
         returnBits = self.spi.query(self.cfg.toBits())
         returnBits = self.spi.query(self.cfg.toBits())
         # Check if the read back is valid
-        compare = self.cfg.compare(returnBits)
+        compare = self.cfg.compare(returnBits)[0]
         if False in compare:
-            self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
+            self.showError("Readback incorrect!")
         for ptr in self.ptrList:
-            self.highlightMenuElement(ptr, not compare[ptr], level="error")
+            if compare[ptr] is False:
+                self.highlightMenuElement(ptr, True, level="error")
         return None
 
     # Verifies FTDI SPI against current configurations state
     def ftdiVerify(self):
-        print("Verify")
-        print("Not yet implemented!")
-        return None
+        # Clear highlights from changing menu items
+        self.cfgPrevBits = self.cfg.toBits()
+        for ptr in self.ptrList:
+            self.highlightMenuElement(ptr, False)
+        # First query: program current bits as bogus bits; read back present configuration
+        readBits = self.spi.query(self.cfg.toBits())
+        # Second query: program read back configuration to restore state
+        returnBits = self.spi.query(readBits)
+        # Compare read bits against current configurations
+        compare, readBitsList = self.cfg.compare(readBits)
+        if False in compare:
+            self.showError("Read bits are different from GUI!")
+        for ptr in self.ptrList:
+            if compare[ptr] is False:
+                self.highlightMenuElement(ptr, True, level="error")
+        return readBitsList
 
 
 

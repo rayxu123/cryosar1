@@ -103,15 +103,22 @@ class configurations:
     def numFields(self):
         return len(self.order)
 
-    # Updates values from another config file according to the initialized order list
+    # Reads in another cfg file, and outputs a list of values.
+    # This does not directly overwrite the configurations class because the GUI is structured to synchronize GUI elements -> configurations state.  Doing the other way around can cause race condition.
     # Input: path to file
-    # Output: none
-    def setFromFile(self, otherCfgFile):
+    # Output: list of fields,values
+    def readFromFile(self, otherCfgFile):
         otherCfg = configparser.ConfigParser()
         otherCfg.read(otherCfgFile)
-        for field in self.order:
-            self.cfg[field]['value'] = self.check(otherCfg[field]['value'], int(self.cfg[field]['width']))
-        self.__update()
+        otherCfgOrder = otherCfg['Default']['order'].split(",")
+        for field in otherCfgOrder:
+            otherCfg[field]['value'] = self.check(otherCfg[field]['value'], int(otherCfg[field]['width']))
+        # Generate the value list
+        valueList = []
+        for field in otherCfgOrder:
+            valueList.append(otherCfg[field]['value'])
+        return otherCfgOrder, valueList
+        
 
     # Writes current config to file.  For safety one cannot overwrite the cfg file the class was initialized with.
     # Input: path to file
@@ -130,15 +137,19 @@ class configurations:
 
     # Compares an input bit string against the current configuration
     # Input: string of bits
-    # Return: list of booleans corresponding to the order list.  True if values match, otherwise false.
+    # Return: 
+    # (1) list of booleans corresponding to the order list.  True if values match, otherwise false.
+    # (2) list of strings corresponding to the inBits separated by field
     def compare(self, inBits):
         compareList = []
+        inBitsList = []
         ptr = 0     # Position of the MSB currently being checked
         for field in self.order:
             width = int(self.cfg[field]['width'])
             valueCfg = self.cfg[field]['value']
             valueInBits = inBits[ptr:(ptr+width)]
             ptr = ptr + width
+            inBitsList.append(valueInBits)
             if valueCfg == valueInBits:
                 compareList.append(True)
             else:
@@ -146,6 +157,6 @@ class configurations:
             # Last field: check if length of bits are same.  Set last boolean to false if not.
             if (field == self.order[-1]) and (len(inBits) != self.len()):
                 compareList[-1] = False
-        return compareList
+        return compareList, inBitsList
 
 
