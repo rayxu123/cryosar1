@@ -21,14 +21,44 @@ if __name__ == "__main__":
     #xem.LoadDefaultPLLConfiguration()
     xem.ConfigureFPGA('RBBRAM.bit')
 
+    # Reset
+    xem.SetWireInValue(0x00, 0x00000001)
+    xem.UpdateWireIns()
+    time.sleep(0.1)
+
     # Mode 0
-    xem.SetWireInValue(0x00, 0xffffffff)
+    xem.SetWireInValue(0x00, 0x00000000)
     xem.UpdateWireIns()
 
-    for value in range(65536):
+    #for value in range(128):
+    #    addr = BitArray(uint=value, length=32)
+    #    xem.WriteRegister(addr.uint, addr.uint)
+        
+
+    for value in range(128):
         addr = BitArray(uint=value, length=32)
-        data = device.ReadRegister(addr.bytes)
-        print(str(addr.bytes)+": "+str(data)))
+        data = xem.ReadRegister(addr.uint)
+        data = BitArray(uint=data, length=32)
+        print(str(addr.hex)+": "+str(data.hex))
+
+    # Mode 1
+    xem.SetWireInValue(0x00, 0x00000002)
+    xem.UpdateWireIns()
+    
+    for value in range(128):
+        addr = BitArray(uint=value, length=32)
+        data = xem.ReadRegister(addr.uint)
+        data = BitArray(uint=data, length=32)
+        print(str(addr.hex)+": "+str(data.hex))
+
+    addr = BitArray(uint=65535, length=32)
+    data = xem.ReadRegister(addr.uint)
+    data = BitArray(uint=data, length=32)
+    print(str(addr.hex)+": "+str(data.hex))
+    addr = BitArray(uint=65535, length=32)
+    data = xem.ReadRegister(addr.uint)
+    data = BitArray(uint=data, length=32)
+    print(str(addr.hex)+": "+str(data.hex))
 
 
 
