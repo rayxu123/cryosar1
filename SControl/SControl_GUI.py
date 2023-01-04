@@ -56,6 +56,8 @@ class SControl_GUI(QMainWindow):
         compare = self.cfg.compare(returnBits)[0]
         if False in compare:
             self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
+        if self.args.batch:
+            sys.exit()
         
 
     def showError(self, message):
