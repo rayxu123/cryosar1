@@ -69,6 +69,7 @@ if __name__ == "__main__":
         dataw = np.dot(dataw, defWeights)
         values.append(dataw)
         #print(dataw)
+        print(data.hex)
 
     unique = np.unique(values)
     #print(list(set(np.diff(values))))
