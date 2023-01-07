@@ -3,7 +3,7 @@
 '''
 Ray Xu
 Nov 2022
-cryosar1/SRead/SRead_FIFO_test.py
+cryosar1/SRead_util/SRead_FIFO_test.py
 
 The path to libokFrontPanel.so must be exported as an environment variable to $LD_LIBRARY_PATH
 '''
@@ -16,6 +16,7 @@ import time
 import numpy as np
 import subprocess
 import timeit
+import sys
 from bitstring import BitArray
 
 
@@ -42,7 +43,13 @@ if __name__ == "__main__":
     xem.ConfigureFPGA('cryosar1_FPGARTL.bit')
 
     # Load configuration for chip, serializer test mode
-    subprocess.run(["./../SControl/SControl.py", "-b", "-f", "./../SControl/config/CryoSAR1_sertestmode.cfg"])
+    try:
+        subprocess.run(["./../SControl/SControl.py", 
+            "-b",
+            "-o", "TX_TESTMODE,1",
+            "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+    except Exception as e:
+        sys.exit(e)
 
     #### TEST 1: Take data on FRAME ####
     print("==== TEST 1: FRAME ====")
@@ -60,7 +67,7 @@ if __name__ == "__main__":
     print("Expected: hex 9c")
     for i in data_unique:
         print("Saw unique value: hex "+BitArray(uint=i, length=32).hex)
-    print("Transferred "+str(FIFO_DEPTH)+" double-words in "+str(benchmark)+" seconds: "+str(FIFO_DEPTH/benchmark)+" double-words/second.")
+    print("Transferred "+str(FIFO_DEPTH)+" double-words in %0.3f seconds: %0.3f double-words/second." % (benchmark, (FIFO_DEPTH)/benchmark))
 
     #### TEST 2: Take data in serializer test mode ####
     print("==== TEST 2: SERIALIZER TEST MODE ====")
@@ -78,7 +85,7 @@ if __name__ == "__main__":
     print("Expected: hex 9894")
     for i in data_unique:
         print("Saw unique value: hex "+BitArray(uint=i, length=32).hex)
-    print("Transferred "+str(FIFO_DEPTH)+" double-words in "+str(benchmark)+" seconds: "+str(FIFO_DEPTH/benchmark)+" double-words/second.")
+    print("Transferred "+str(FIFO_DEPTH)+" double-words in %0.3f seconds: %0.3f double-words/second." % (benchmark, (FIFO_DEPTH)/benchmark))
 
     #### TEST 3: FIFO depth test ####
     print("==== TEST 3: FIFO depth test ====")
@@ -102,7 +109,7 @@ if __name__ == "__main__":
         data_unique = np.unique(data_diff)
         for i in data_unique:
             print("Saw unique value difference: decimal "+str(i))
-        print("Transferred "+str(FIFO_DEPTH+add)+" double-words in "+str(benchmark)+" seconds: "+str((FIFO_DEPTH+add)/benchmark)+" double-words/second.")
+        print("Transferred "+str(FIFO_DEPTH+add)+" double-words in %0.3f seconds: %0.3f double-words/second." % (benchmark, (FIFO_DEPTH+add)/benchmark))
 
     
 

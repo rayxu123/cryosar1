@@ -39,6 +39,17 @@ class SControl_GUI(QMainWindow):
         # Set up file path
         self.filepathWidget.setText(os.path.abspath(self.args.cfgFile))
         self.resize(100, 100)
+        # Parse overridden configurations
+        if self.args.override is not None:
+            for o in self.args.override:
+                # String parse.  Note the field name cannot have a comma.
+                fieldName = o.split(",")[0]
+                value = o.split(",")[1]
+                # Get ptr value for the field 
+                ptr = self.cfg.fieldList.index(fieldName)
+                # Set value
+                self.setMenuElement(ptr, value)
+                
         # Initiate hardware
         self.spi = ftdispi.ftdispi(self.args.addr, self.args.noConnect)
         # Flush shift register.  Program in a bit string of length that is equal to or greater than the shift register size.  Discard the output.
@@ -258,7 +269,7 @@ class SControl_GUI(QMainWindow):
             else:
                 menuObj.setChecked(False)
         elif fieldtype == "int":
-            value_uint = BitArray(bin=value).uint
+            value_uint = BitArray(bin=value).uint  
             menuObj.setValue(value_uint)
         elif fieldtype == "bitstring":
             menuObj.setText(value)

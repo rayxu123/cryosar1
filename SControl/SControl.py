@@ -38,6 +38,8 @@ if __name__ == "__main__":
                         help="Initial configuration file.  (Default: ./config/CryoSAR1.cfg)")
     parser.add_argument('-n', dest='noConnect', action='store_true', default=False,
                         help="No-connect mode.  (Default: False)")
+    parser.add_argument('-o', dest='override', action='append',
+                        help="Overrides specific fields on startup.  May specify more than once.  Specified as '<field name>,<value>' pairs.  Where <field name> is from the section name and <value> must be a bit string in order of MSB...LSB.  For example, 'ODAC_CODE,11111111' or 'CAL_FORCE_P,000111111111111'.  Field min and max must be obeyed, otherwise the bitstring will be truncated.")
     args = parser.parse_args()
     # Launch application
     if args.listFTDI:
