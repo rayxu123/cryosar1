@@ -23,28 +23,25 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt     # DNF: python3-matplotlib
 from bitstring import BitArray
 import fpga
+import calibration
 
 
 
 if __name__ == "__main__":
     fpga = fpga.fpga()
-    # Load configuration for chip, serializer test mode
-    try:
-        subprocess.run(["./../SControl/SControl.py", 
-            "-b",
-            "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
-    except Exception as e:
-        sys.exit(e)
+    cal = calibration.calibration(fpga)
+    
+    cal.calibrate_ODAC()
 
-    data, valid = fpga.takeData("data", bipolar=True)
+    #data, valid = fpga.takeData("data", bipolar=True, printBinary=True)
     #print(np.unique(np.diff(data)))
-    print(np.unique(data))
+    #print(np.unique(data))
 
 
     # Plot histogram
-    fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.hist(data, bins=len(np.unique(data)), edgecolor = "black")
-    plt.show() 
+    #fig, axs = plt.subplots(1,1,tight_layout=True)
+    #axs.hist(data, bins=len(np.unique(data)), edgecolor = "black")
+    #plt.show() 
 
 
     

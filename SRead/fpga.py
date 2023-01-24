@@ -64,8 +64,8 @@ class fpga:
     #
     # If option noConnect: data returns is a list of zeros of length numSamples and 'all valid' is always True
     #
-    # If bipolar weighting is true, then bits 0,1 is converted to -0.5,+0.5 when computing the dot product of bits and bit weights.  This option only applies to source = data.
-    def takeData(self, source="data", numSamples=FIFO_MAXDEPTH, weighting=DEF_WEIGHTS, bipolar=False):
+    # If bipolar weighting is true, then bits 0,1 is converted to -1,+1 when computing the dot product of bits and bit weights.  This option only applies to source = data.  
+    def takeData(self, source="data", numSamples=FIFO_MAXDEPTH, weighting=DEF_WEIGHTS, bipolar=False, printBinary=False):
         # Sanity check
         if (numSamples > self.FIFO_MAXDEPTH) or (numSamples < 1):
             raise ValueError("Number of samples must be between 1 and 32768 inclusive.")
@@ -106,7 +106,7 @@ class fpga:
                 weight = None
             elif (source == "fpgacounter"):
                 weight = None
-            result = self.pool.starmap(parse, zip(fifodata, repeat(weight), repeat(bipolar)))
+            result = self.pool.starmap(parse, zip(fifodata, repeat(weight), repeat(bipolar), repeat(printBinary)))
             dataw, valid = zip(*result)
             if not all(valid):
                 raise ValueError("Encountered at least one non-valid sample.  Quitting.")
@@ -118,7 +118,7 @@ class fpga:
 # Method used by multiprocessing pool to parse data
 # Input: fifodata (uint16), and a list of 16 bit weights from MSB to LSB or "None" to use radix-2 weighting, and whether to use bipolar weighting
 # Return: weighted data, valid (only if weighting is not None) otherwise True
-def parse(fifodata, weighting, bipolar):
+def parse(fifodata, weighting, bipolar, printBinary):
     #print(weighting) 
     if weighting is None:
         # Do nothing
@@ -129,12 +129,12 @@ def parse(fifodata, weighting, bipolar):
         fifodata = BitArray(uint=fifodata, length=16).bin  
         fifodata = [*fifodata]    # split each bit into a list
         fifodata = [eval(j) for j in fifodata]    # re-evaluate, convert char to int in bit list
+        if printBinary:
+            print(fifodata)
         if bipolar:
-            fifodata = [j-0.5 for j in fifodata]    # Convert 0,1 to -0.5,+0.5
-        if bipolar:
-            return np.dot(fifodata, weighting)-0.5, valid   # Hack to make nice numbers
-        else:
-            return np.dot(fifodata, weighting), valid
+            fifodata = [(2*j)-1 for j in fifodata]    # Convert 0,1 to -1,+1
+            fifodata = [0.5*j for j in fifodata]        # Re-normalize to account for the doubling in magnitude
+        return np.dot(fifodata, weighting), valid
 
 
 
