@@ -64,7 +64,7 @@ class fpga:
     #
     # If option noConnect: data returns is a list of zeros of length numSamples and 'all valid' is always True
     #
-    # If bipolar weighting is true, a bit zero is treated as -1 when computing the dot product of bits and bit weights.  This option only applies to source = data.
+    # If bipolar weighting is true, then bits 0,1 is converted to -0.5,+0.5 when computing the dot product of bits and bit weights.  This option only applies to source = data.
     def takeData(self, source="data", numSamples=FIFO_MAXDEPTH, weighting=DEF_WEIGHTS, bipolar=False):
         # Sanity check
         if (numSamples > self.FIFO_MAXDEPTH) or (numSamples < 1):
@@ -130,8 +130,11 @@ def parse(fifodata, weighting, bipolar):
         fifodata = [*fifodata]    # split each bit into a list
         fifodata = [eval(j) for j in fifodata]    # re-evaluate, convert char to int in bit list
         if bipolar:
-            fifodata = [(j*2)-1 for j in fifodata]    # Convert 0,1 to -1,1
-        return np.dot(fifodata, weighting), valid
+            fifodata = [j-0.5 for j in fifodata]    # Convert 0,1 to -0.5,+0.5
+        if bipolar:
+            return np.dot(fifodata, weighting)-0.5, valid   # Hack to make nice numbers
+        else:
+            return np.dot(fifodata, weighting), valid
 
 
 
