@@ -30,7 +30,7 @@ class fpga:
     DATA_FRAME_RESET = 0x00000001
     DATA_FRAME_START = 0x00000000
     FIFO_MAXDEPTH = 32768
-    SER_RATE = 20000000    # Serialization speed, in MHz.  Also main ADC clock speed.
+    SER_RATE = 200000000    # Serialization speed, in Hz.  Also main ADC clock speed.
     SER_WIDTH = 8               # Number of bits serialized in one sampling period
     ## Constants related to data parsing
     MASK_VALID = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   
@@ -65,7 +65,9 @@ class fpga:
     # If option noConnect: data returns is a list of zeros of length numSamples and 'all valid' is always True
     #
     # If bipolar weighting is true, then bits 0,1 is converted to -1,+1 when computing the dot product of bits and bit weights.  This option only applies to source = data.  
-    def takeData(self, source="data", numSamples=FIFO_MAXDEPTH, weighting=DEF_WEIGHTS, bipolar=False, printBinary=False):
+    #
+    # Multiplicity: number of times to loop the fpga data taking (to get more than 32k samples but discontinuous)
+    def takeData(self, source="data", numSamples=FIFO_MAXDEPTH, weighting=DEF_WEIGHTS, bipolar=False, printBinary=False, mult=1):
         # Sanity check
         if (numSamples > self.FIFO_MAXDEPTH) or (numSamples < 1):
             raise ValueError("Number of samples must be between 1 and 32768 inclusive.")
@@ -73,47 +75,52 @@ class fpga:
             raise ValueError("Number of samples must be integer.")
 
         if not self.noConnect:        
-            # Set FPGA to fill the FIFO
-            if (source == "data"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_CHIP_RESET)
-            elif (source == "frame"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FRAME_RESET)
-            elif (source == "fpgacounter"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FPGACOUNTER_RESET)
-            else:
-                raise ValueError("Invalid data source.")
-            self.xem.UpdateWireIns()
-            time.sleep(0.001)
-            if (source == "data"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_CHIP_START)
-            elif (source == "frame"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FRAME_START)
-            elif (source == "fpgacounter"):
-                self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FPGACOUNTER_START)
-            self.xem.UpdateWireIns()
-            # Wait for data to fill FIFO
-            wait_for_data = (numSamples*1.2)/(self.SER_RATE/self.SER_WIDTH)  # Expression to wait for the FIFO to fill + 20% margin
-            time.sleep(wait_for_data)
-            # Transfer data.  
-            fifodata = ok.okTRegisterEntries(numSamples)
-            self.xem.ReadRegisters(fifodata)
-            # Pickle the data manually for multiprocessing
-            fifodata = [i.data for i in fifodata]
-            # Parse the data using multiprocessing
-            if (source == "data"):
-                weight = weighting
-            elif (source == "frame"):
-                weight = None
-            elif (source == "fpgacounter"):
-                weight = None
-            result = self.pool.starmap(parse, zip(fifodata, repeat(weight), repeat(bipolar), repeat(printBinary)))
-            dataw, valid = zip(*result)
-            if not all(valid):
-                raise ValueError("Encountered at least one non-valid sample.  Quitting.")
-            return dataw, all(valid)
+            dataw_list = []
+            valid_list = []
+            for mult_loop in range(mult):
+                # Set FPGA to fill the FIFO
+                if (source == "data"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_CHIP_RESET)
+                elif (source == "frame"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FRAME_RESET)
+                elif (source == "fpgacounter"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FPGACOUNTER_RESET)
+                else:
+                    raise ValueError("Invalid data source.")
+                self.xem.UpdateWireIns()
+                time.sleep(0.001)
+                if (source == "data"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_CHIP_START)
+                elif (source == "frame"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FRAME_START)
+                elif (source == "fpgacounter"):
+                    self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_FPGACOUNTER_START)
+                self.xem.UpdateWireIns()
+                # Wait for data to fill FIFO
+                wait_for_data = (numSamples*1.2)/(self.SER_RATE/self.SER_WIDTH)  # Expression to wait for the FIFO to fill + 20% margin
+                time.sleep(wait_for_data)
+                # Transfer data.  
+                fifodata = ok.okTRegisterEntries(numSamples)
+                self.xem.ReadRegisters(fifodata)
+                # Pickle the data manually for multiprocessing
+                fifodata = [i.data for i in fifodata]
+                # Parse the data using multiprocessing
+                if (source == "data"):
+                    weight = weighting
+                elif (source == "frame"):
+                    weight = None
+                elif (source == "fpgacounter"):
+                    weight = None
+                result = self.pool.starmap(parse, zip(fifodata, repeat(weight), repeat(bipolar), repeat(printBinary)))
+                dataw, valid = zip(*result)
+                if not all(valid):
+                    raise ValueError("Encountered at least one non-valid sample.  Quitting.")
+                dataw_list.extend(dataw)
+                valid_list.extend(valid)
+            return dataw_list, all(valid_list)
         else:
             # No connect is asserted
-            return [0]*numSamples, True         
+            return [0]*numSamples*mult, True         
 
 # Method used by multiprocessing pool to parse data
 # Input: fifodata (uint16), and a list of 16 bit weights from MSB to LSB or "None" to use radix-2 weighting, and whether to use bipolar weighting
@@ -133,7 +140,7 @@ def parse(fifodata, weighting, bipolar, printBinary):
             print(fifodata)
         if bipolar:
             fifodata = [(2*j)-1 for j in fifodata]    # Convert 0,1 to -1,+1
-            fifodata = [0.5*j for j in fifodata]        # Re-normalize to account for the doubling in magnitude
+            #fifodata = [0.5*j for j in fifodata]        # Re-normalize to account for the doubling in magnitude
         return np.dot(fifodata, weighting), valid
 
 

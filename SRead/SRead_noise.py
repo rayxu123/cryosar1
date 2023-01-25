@@ -3,9 +3,11 @@
 '''
 Ray Xu
 Jan 2023
-cryosar1/SRead/SRead.py
+cryosar1/SRead/SRead_noise.py
 
 The path to libokFrontPanel.so must be exported as an environment variable to $LD_LIBRARY_PATH
+
+Use this script to take pedestal data.
 '''
 
 
@@ -62,13 +64,13 @@ if __name__ == "__main__":
     #print(np.unique(data))
     print("Std dev: "+str(np.std(data)))
     # Plot histogram
-    #fig, axs = plt.subplots(1,1,tight_layout=True)
-    #axs.hist(data, bins=len(np.unique(data)), edgecolor = "black")
-    #plt.show() 
-    # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.plot(data, marker='o')
+    axs.hist(data, bins=len(np.unique(data)), edgecolor = "black")
     plt.show() 
+    # Plot time domain
+    #fig, axs = plt.subplots(1,1,tight_layout=True)
+    #axs.plot(data, marker='o')
+    #plt.show() 
 
 
     
