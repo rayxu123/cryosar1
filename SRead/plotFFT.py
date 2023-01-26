@@ -71,9 +71,9 @@ def plotFFT(data, fs, plot=True, showNow=True, title="FFT"):
         axs_FFT.set_ylim(20*(np.floor(np.amin(PSD)/20)), 0)
         # Annotate
         if fmax_idx > len(freq)/2:
-            axs_FFT.text(freq[int(np.floor(sig_low_idx-0.1*data_len))], -SFDR+5, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+"bits", horizontalalignment='right')
+            axs_FFT.text(freq[int(np.floor(sig_low_idx-0.1*data_len))], -SFDR+5, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits", horizontalalignment='right')
         else:
-            axs_FFT.text(freq[int(np.floor(sig_high_idx+0.1*data_len))], -SFDR+5, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+"bits", horizontalalignment='left')
+            axs_FFT.text(freq[int(np.floor(sig_high_idx+0.1*data_len))], -SFDR+5, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits", horizontalalignment='left')
 
         datacursor(lines)
         if showNow: plt.show() 
