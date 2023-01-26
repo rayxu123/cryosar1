@@ -45,18 +45,18 @@ if __name__ == "__main__":
     print("Using predefined constants.")
     cal.odac = "10000101"
     cal.weights = [0.00000000, 1976.04939707, 1131.90471625, 649.95718168, 371.13869284, 212.36208642, 122.87490370, 72.08062003, 41.03949890, 24.41642303, 13.68627472, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
-    print("Calibrated ODAC: \""+str(self.odac)+"\"")
+    print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
-    print("["+', '.join([f'{item:.8f}' for item in self.weights])+"]")
+    print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     '''
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
     cal.odac = "10000101"
     cal.weights = [0.00000000, 1891.53274546, 1083.37309737, 622.01532083, 355.12751688, 203.32445951, 117.74653721, 69.15250705, 39.35890198, 23.75098572, 13.49131165, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
-    print("Calibrated ODAC: \""+str(self.odac)+"\"")
+    print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
-    print("["+', '.join([f'{item:.8f}' for item in self.weights])+"]")
+    print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     '''
     
     ## Calibrated data ##
