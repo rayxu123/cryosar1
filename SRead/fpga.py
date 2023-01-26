@@ -49,7 +49,7 @@ class fpga:
 
     # Take data
     # Inputs: source ("data", "frame", "fpgacounter"), numSamples (1...32768), weighting (a list of 16 numbers from MSB to LSB), bipolar weighting (boolean)
-    # Outputs: data (list of numbers versus time), all valid (bool)
+    # Outputs: data (list of numbers versus time), all valid (bool), datar2 (same as data but weighted using radix-2 unsigned binary)
     #
     # Case: source = data
     # weights from 'weighting' are applied
@@ -77,6 +77,7 @@ class fpga:
         if not self.noConnect:        
             dataw_list = []
             valid_list = []
+            datar2_list = []
             for mult_loop in range(mult):
                 # Set FPGA to fill the FIFO
                 if (source == "data"):
@@ -117,10 +118,11 @@ class fpga:
                     raise ValueError("Encountered at least one non-valid sample.  Quitting.")
                 dataw_list.extend(dataw)
                 valid_list.extend(valid)
-            return dataw_list, all(valid_list)
+                datar2_list.extend(fifodata)
+            return dataw_list, all(valid_list), datar2_list
         else:
             # No connect is asserted
-            return [0]*numSamples*mult, True         
+            return [0]*numSamples*mult, True, [0]*numSamples*mult        
 
 # Method used by multiprocessing pool to parse data
 # Input: fifodata (uint16), and a list of 16 bit weights from MSB to LSB or "None" to use radix-2 weighting, and whether to use bipolar weighting

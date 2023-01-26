@@ -3,7 +3,7 @@
 '''
 Ray Xu
 Jan 2023
-cryosar1/SRead/SRead.py
+cryosar1/SRead/SRead_sine.py
 
 The path to libokFrontPanel.so must be exported as an environment variable to $LD_LIBRARY_PATH
 '''
@@ -33,20 +33,20 @@ if __name__ == "__main__":
     fpga = fpga.fpga()
     cal = calibration.calibration(fpga)
     
-    # Uncomment here to run calibration
-    
+    # Uncomment here to run calibration (connect 50 ohm sma to signal input)
+    '''
     cal.calibrate_ODAC_using_weights()
     cal.calibrate_weights()
-    
+    '''
     # Uncomment here to apply pre-defined calibration values
-    '''
+    
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 1905.57759770, 1091.37488475, 626.72083549, 357.71243830, 204.87015594, 118.58812263, 69.55837715, 39.66100922, 23.76150513, 13.49820709, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
-    '''
+    cal.weights = [0.00000000, 1976.04939707, 1131.90471625, 649.95718168, 371.13869284, 212.36208642, 122.87490370, 72.08062003, 41.03949890, 24.41642303, 13.68627472, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    
     # Uncomment here to apply play values
     '''
     cal.odac = "10000101"
-    cal.weights = [0.000, 1894.597, 1084.891, 623.030, 355.733, 203.613, 117.979, 69.216, 39.405, 23.765, 13.457, 8.000, 5.000, 3.000, 2.000, 1.000]
+    cal.weights = [0.00000000, 1891.53274546, 1083.37309737, 622.01532083, 355.12751688, 203.32445951, 117.74653721, 69.15250705, 39.35890198, 23.75098572, 13.49131165, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
     '''
     
     ## Calibrated data ##
@@ -59,20 +59,21 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Take data
-    data, valid = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+    data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
     # Round
     #print(np.unique(data))
     print("Calibrated Std dev: "+str(np.std(data)))
     # Plot histogram (rounded)
-    fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
-    axs.title.set_text("Calibrated")
+    #fig, axs = plt.subplots(1,1,tight_layout=True)
+    #axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
+    #axs.title.set_text("Calibrated")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
     axs.title.set_text("Calibrated")
     plotFFT(data, 25, showNow=False, title="Calibrated")
     np.savetxt("data_cal.txt", data)
+    np.savetxt("data_r2.txt", datar2)
 
 
     ## Uncalibrated data ##
@@ -85,14 +86,14 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Take data
-    data, valid = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
+    data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
     # Round
     #print(np.unique(data))
     print("Uncalibrated Std dev: "+str(np.std(data)))
     # Plot histogram
-    fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
-    axs.title.set_text("UNCalibrated")
+    #fig, axs = plt.subplots(1,1,tight_layout=True)
+    #axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
+    #axs.title.set_text("UNCalibrated")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')

@@ -35,9 +35,9 @@ class calibration:
     CAL_ODAC_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1])
     ## Constants related to weight calibration (first 3 weights are fixed)
     CAL_WEIGHTS_WIDTH = 15      # Total number of calibrate-able bits
-    CAL_WEIGHTS_START = 8       # LSB index to start calibration at.  value of 1 represents LSB; value of 2 represents LSB+1, etc.  Bit 8 is the start of the CDAC whereas lower bits are RCDAC.
+    CAL_WEIGHTS_START = 6       # LSB index to start calibration at.  value of 1 represents LSB; value of 2 represents LSB+1, etc.  Bit 8 is the start of the CDAC whereas lower bits are RCDAC.
     CAL_WEIGHTS_END = 15        # LSB index to end calibration at
-    CAL_WEIGHTS_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
+    CAL_WEIGHTS_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
     CAL_WEIGHTS_SLICEEN_NONE = "000000000000000"  
     
 
@@ -83,7 +83,7 @@ class calibration:
                 "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
             ])
             # Take data, get mean of LSB bit flips
-            data,valid = self.fpga.takeData("data", weighting=self.CAL_ODAC_WEIGHTS, bipolar=True, printBinary=False)
+            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_ODAC_WEIGHTS, bipolar=True, printBinary=False)
             if (np.mean(data) > 0):
                 odac_value = odac_value - odac_weight
             else:
@@ -132,7 +132,7 @@ class calibration:
                     "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
                 ])
             # Take data, get mean of downstream slices
-            data,valid = self.fpga.takeData("data", weighting=self.CAL_ODAC_SEED, bipolar=True, printBinary=False)
+            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_ODAC_SEED, bipolar=True, printBinary=False)
             if bsel is False:
                 if (np.mean(data) > 0):
                     odac_value = odac_value - odac_weight
@@ -177,7 +177,7 @@ class calibration:
                 "SLICE_EN_N,"+cal_sliceen,
                 "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
             ])
-        data,valid = self.fpga.takeData("data", weighting=self.CAL_ODAC_SEED, bipolar=True, printBinary=False)
+        data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_ODAC_SEED, bipolar=True, printBinary=False)
         print("Final Mean: "+str(np.mean(data)))
         print("==== ODAC CALIBRATION (weights method)====")
         print("Calibrated ODAC: \""+str(self.odac)+"\"")
@@ -211,7 +211,7 @@ class calibration:
                 "ODAC_CODE,"+self.odac
             ])
             # Take data, get mean 
-            data,valid = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.MULT)
+            data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.MULT)
             w_pdac_force0 = np.mean(data)
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
@@ -232,7 +232,7 @@ class calibration:
                 "ODAC_CODE,"+self.odac
             ])
             # Take data, get mean 
-            data,valid = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.MULT)
+            data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.MULT)
             w_pdac_force1 = np.mean(data)
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
@@ -261,7 +261,7 @@ class calibration:
                 "ODAC_CODE,"+self.odac
             ])
             # Take data, get mean 
-            data,valid = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.MULT)
+            data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.MULT)
             w_ndac_force0 = np.mean(data)
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
@@ -282,7 +282,7 @@ class calibration:
                 "ODAC_CODE,"+self.odac
             ])
             # Take data, get mean 
-            data,valid = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.MULT)
+            data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.MULT)
             w_ndac_force1 = np.mean(data)
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
