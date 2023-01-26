@@ -34,7 +34,7 @@ class calibration:
     CAL_ODAC_START = 2                                                      # Only evaluate LSB
     CAL_ODAC_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])  # Only enable slices that have known/assumed weights
     ## Constants related to weight calibration (first 3 weights are fixed)
-    CAL_WEIGHTS_MULT = 10       # multiplicity: number of 32768 samples to consider for averaging
+    CAL_WEIGHTS_MULT = 1       # multiplicity: number of 32768 samples to consider for averaging
     CAL_WEIGHTS_WIDTH = 15      # Total number of calibrate-able bits
     CAL_WEIGHTS_START = 6       # LSB index to start calibration at.  value of 1 represents LSB; value of 2 represents LSB+1, etc.  Bit 8 is the start of the CDAC whereas lower bits are RCDAC.
     CAL_WEIGHTS_END = 15        # LSB index to end calibration at
