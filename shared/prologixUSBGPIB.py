@@ -124,8 +124,8 @@ class prologixUSBGPIB:
             self.s.reset_output_buffer()
             self.s.reset_input_buffer()
             # Reset hardware input buffer
-            while len(self.s.read()) > 0:
-                time.sleep(0.1)
+            #while len(self.s.read()) > 0:
+            #    time.sleep(0.1)
         
     
     

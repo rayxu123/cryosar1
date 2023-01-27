@@ -64,6 +64,8 @@ class TMon_GUI(QWidget):
         self.gpib.write("hp3458a", "PRESET NORM")   # Preset normal
         self.gpib.write("hp3458a", "TRIG HOLD")     # Pause data taking otherwise gpib input buffer will be filled
         self.gpib.resetBuffers()
+        # Query twice to clear out crap in the hardware buffer
+        self.gpibid = self.gpib.query("hp3458a","ID?")
         self.gpibid = self.gpib.query("hp3458a","ID?")
         if self.args.twowire:
             self.gpib.write("hp3458a", "OHM 200")

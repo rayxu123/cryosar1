@@ -37,15 +37,15 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    '''
+    
     f.write("CAL:function")
     input("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
     cal.calibrate_ODAC_using_weights()
     cal.calibrate_weights()
     input("CALIBRATION: Attach signal input source.  Then press ENTER.")
-    '''
-    # Uncomment here to apply pre-defined calibration values
     
+    # Uncomment here to apply pre-defined calibration values
+    '''
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000111"
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    
+    '''
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
