@@ -32,23 +32,28 @@ from plotFFT import plotFFT
 if __name__ == "__main__":
     fpga = fpga.fpga()
     cal = calibration.calibration(fpga)
+    # Save calibration info ##
+    f = open("./output/calibration.txt", "w") 
+     
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
+    f.write("CAL:function")
     input("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
     cal.calibrate_ODAC_using_weights()
     cal.calibrate_weights()
     input("CALIBRATION: Attach signal input source.  Then press ENTER.")
-    
-    # Uncomment here to apply pre-defined calibration values
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
+    f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000111"
     cal.weights = [0.00000000, 1944.13029629, 1113.17884481, 639.40018669, 365.24968587, 208.87273058, 121.12694786, 70.98343100, 40.40851593, 24.33997345, 13.74714355, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -59,6 +64,14 @@ if __name__ == "__main__":
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     '''
     
+    
+    # Write calibration file
+    f.write("ODAC\n")
+    f.write(cal.odac+"\n")
+    f.write("WEIGHTS\n")
+    f.write("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]\n")
+    f.close()
+
     ## Calibrated data ##
     # Apply data taking configuration + ODAC calibration
     try:
@@ -70,20 +83,15 @@ if __name__ == "__main__":
         sys.exit(e)
     # Take data
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
-    # Round
-    #print(np.unique(data))
-    print("Calibrated Std dev: "+str(np.std(data)))
-    # Plot histogram (rounded)
-    #fig, axs = plt.subplots(1,1,tight_layout=True)
-    #axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
-    #axs.title.set_text("Calibrated")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
     axs.title.set_text("Calibrated")
-    plotFFT(data, 25, showNow=False, title="Calibrated")
-    np.savetxt("data_cal.txt", data)
-    np.savetxt("data_r2.txt", datar2)
+    # Plot FFT
+    plotFFT(data, 25, showNow=False, title="Calibrated", save="./output/FFT_cal")
+    # Save data
+    np.savetxt("./output/data_cal.txt", data)
+    np.savetxt("./output/data_rad2.txt", datar2)
 
 
     ## Uncalibrated data ##
@@ -97,18 +105,14 @@ if __name__ == "__main__":
         sys.exit(e)
     # Take data
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
-    # Round
-    #print(np.unique(data))
-    print("Uncalibrated Std dev: "+str(np.std(data)))
-    # Plot histogram
-    #fig, axs = plt.subplots(1,1,tight_layout=True)
-    #axs.hist(np.round(data), bins=len(np.unique(np.round(data))), edgecolor = "black")
-    #axs.title.set_text("UNCalibrated")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
     axs.title.set_text("UNCalibrated")
-    plotFFT(data, 25, showNow=False, title="UNCalibrated")
+    # Plot FFT
+    plotFFT(data, 25, showNow=False, title="UNCalibrated", save="./output/FFT_uncal")
+    # Save data
+    np.savetxt("./output/data_uncal.txt", data)
 
 
     plt.show() 

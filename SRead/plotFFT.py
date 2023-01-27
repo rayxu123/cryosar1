@@ -13,9 +13,9 @@ from mpldatacursor import datacursor    # pip3: mpldatacursor as root
 
 
 # function to plot FFT
-# Input: data (list of numbers representing time domain data), fs (sampling frequency in MHz), showNow (boolean, set to false and call plt.show() later)
+# Input: data (list of numbers representing time domain data), fs (sampling frequency in MHz), showNow (boolean, set to false and call plt.show() later), save (path to png output, otherwise None to skip saving)
 # Return: ENOB, SNDR, SFDR, freq (list), PSD (list)
-def plotFFT(data, fs, plot=True, showNow=True, title="FFT"):
+def plotFFT(data, fs, plot=True, showNow=True, title="FFT", save=None):
     dco = np.mean(data)
     data_len = len(data)  
     # Remove DC offset
@@ -94,6 +94,8 @@ def plotFFT(data, fs, plot=True, showNow=True, title="FFT"):
 
         datacursor(lines)
         if showNow: plt.show() 
+
+        if save is not None: plt.savefig(save)
     
 
 
