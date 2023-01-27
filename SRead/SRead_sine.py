@@ -16,6 +16,7 @@ import time
 import numpy as np
 import subprocess
 import tabulate
+import datetime
 import time
 import sys
 import pandas as pd
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
     
-    f.write("CAL:function")
+    f.write("CAL:function\n")
     input("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
     cal.calibrate_ODAC_using_weights()
     cal.calibrate_weights()
@@ -65,7 +66,9 @@ if __name__ == "__main__":
     '''
     
     
-    # Write calibration file
+    # Write calibration file    
+    f.write("TIME\n")
+    f.write(datetime.datetime.now().strftime('%Y%m%d_T%H%M%S')+"\n")
     f.write("ODAC\n")
     f.write(cal.odac+"\n")
     f.write("WEIGHTS\n")
