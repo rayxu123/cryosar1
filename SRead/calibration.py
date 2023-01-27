@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt     # DNF: python3-matplotlib
 class calibration:
     # When assigning variables from these class constants, a deep copy must be performed to avoid altering the constants!     
     CAL_WEIGHTS_DEFAULT = [0.0, 1940.0, 1110.0, 635.0, 365.0, 210.0, 120.0, 70.0, 40.0, 24.0, 14.0, 8.0, 5.0, 3.0, 2.0, 1.0]   # 12bRC arrangement.  List elements must be of type float.
+    #CAL_WEIGHTS_DEFAULT = [0.0, 1940.0, 1110.0, 635.0, 365.0, 210.0, 120.0, 70.0, 40.0, 24.0, 14.0, 8.0, 3.47, 1.5, 1.2, 1.0]    # Experimental!
     CAL_ODAC_DEFAULT = "10000000"                                           # Default value, this means nothing    
     ## Constants related to ODAC calibration
     CAL_ODAC_MULT = 1                                                       # multiplicity: number of 32768 samples to consider for averaging
@@ -36,9 +37,9 @@ class calibration:
     ## Constants related to weight calibration (first 3 weights are fixed)
     CAL_WEIGHTS_MULT = 1       # multiplicity: number of 32768 samples to consider for averaging
     CAL_WEIGHTS_WIDTH = 15      # Total number of calibrate-able bits
-    CAL_WEIGHTS_START = 6       # LSB index to start calibration at.  value of 1 represents LSB; value of 2 represents LSB+1, etc.  Bit 8 is the start of the CDAC whereas lower bits are RCDAC.
+    CAL_WEIGHTS_START = 5       # LSB index to start calibration at.  value of 1 represents LSB; value of 2 represents LSB+1, etc.  Bit 8 is the start of the CDAC whereas lower bits are RCDAC.
     CAL_WEIGHTS_END = 15        # LSB index to end calibration at
-    CAL_WEIGHTS_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1])   # Only enable slices that have known/assumed weights
+    CAL_WEIGHTS_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1])   # Only enable slices that have known/assumed weights
     CAL_WEIGHTS_SLICEEN_NONE = "000000000000000"  
     
 
@@ -198,6 +199,154 @@ class calibration:
         data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_ODAC_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
         print("Final Mean: "+str(np.mean(data)))
         print("==== ODAC CALIBRATION (weights method)====")
+        print("Calibrated ODAC: \""+str(self.odac)+"\"")
+        print("==== ====")
+
+    # Version 2, more closely imitates calibrate_weights
+    # Only imitate the first bit calibration in calibrate_weights
+    def calibrate_ODAC_using_weights_v2(self, bsel=False):
+        # Initial conditions   
+        redundancy = 0  # Extra steps to take     
+        odac_value = 0
+        odac_weight = pow(2, self.CAL_ODAC_BITWIDTH-1)
+        cal_index = self.CAL_WEIGHTS_START
+        cal_force = BitArray(uint=int(pow(2,cal_index-1)), length=self.CAL_WEIGHTS_WIDTH).bin
+        cal_sliceen = BitArray(uint=int(pow(2,cal_index)-1), length=self.CAL_WEIGHTS_WIDTH).bin
+        for i in range(self.CAL_ODAC_ITER+redundancy):
+            # Set ODAC code, force 0
+            if bsel is False:
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,0",
+                    "CAL_DIR_P,0",
+                    "CAL_DIR_N,0",
+                    "CAL_FORCE_P,"+cal_force,
+                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_P,"+cal_sliceen,
+                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                ])
+            else:
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,1",
+                    "CAL_DIR_P,0",
+                    "CAL_DIR_N,0",
+                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "CAL_FORCE_N,"+cal_force,
+                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_N,"+cal_sliceen,
+                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                ])
+            # Take data
+            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+            force0 = np.mean(data)
+            # Set ODAC code, force 1
+            if bsel is False:
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,0",
+                    "CAL_DIR_P,1",
+                    "CAL_DIR_N,1",
+                    "CAL_FORCE_P,"+cal_force,
+                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_P,"+cal_sliceen,
+                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                ])
+            else:
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,1",
+                    "CAL_DIR_P,1",
+                    "CAL_DIR_N,1",
+                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "CAL_FORCE_N,"+cal_force,
+                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_N,"+cal_sliceen,
+                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                ])
+            # Take data
+            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+            force1 = np.mean(data)
+            if bsel is False:
+                if (np.mean([force0, force1]) > 0):
+                    odac_value = odac_value - odac_weight
+                else:
+                    odac_value = odac_value + odac_weight
+            else:
+                if (np.mean([force0, force1]) > 0):
+                    odac_value = odac_value + odac_weight
+                else:
+                    odac_value = odac_value - odac_weight
+            # Set up next iteration
+            odac_weight = np.ceil(odac_weight/2)
+            # Debug printing
+            print("== ITERATION "+str(i)+" ==")
+            print("Force 0: "+str(force0))
+            print("Force 1: "+str(force1))
+            print("Mean: "+str(np.mean([force0, force1])))
+            print("ODAC uint8: "+str(odac_value))
+            print("ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+        # Update class attribute
+        self.odac = BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+        # Check the final value of self.odac
+        if bsel is False:
+            self.__config([
+                "CAL_EN,1",
+                "B_SEL,0",
+                "CAL_DIR_P,0",
+                "CAL_DIR_N,0",
+                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "CAL_FORCE_N,"+cal_force,
+                "SLICE_EN_P,"+cal_sliceen,
+                "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+            ])
+        else:
+            self.__config([
+                "CAL_EN,1",
+                "B_SEL,1",
+                "CAL_DIR_P,0",
+                "CAL_DIR_N,0",
+                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "CAL_FORCE_N,"+cal_force,
+                "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "SLICE_EN_N,"+cal_sliceen,
+                "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+            ])
+        data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+        force0 = np.mean(data)
+        if bsel is False:
+            self.__config([
+                "CAL_EN,1",
+                "B_SEL,0",
+                "CAL_DIR_P,1",
+                "CAL_DIR_N,1",
+                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "CAL_FORCE_N,"+cal_force,
+                "SLICE_EN_P,"+cal_sliceen,
+                "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+            ])
+        else:
+            self.__config([
+                "CAL_EN,1",
+                "B_SEL,1",
+                "CAL_DIR_P,1",
+                "CAL_DIR_N,1",
+                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "CAL_FORCE_N,"+cal_force,
+                "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                "SLICE_EN_N,"+cal_sliceen,
+                "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+            ])
+        data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+        force1 = np.mean(data)
+        print("==== ODAC CALIBRATION (weights method v2)====")
+        print("Force 0: "+str(force0))
+        print("Force 1: "+str(force1))
+        print("Final Mean: "+str(np.mean([force0, force1])))
         print("Calibrated ODAC: \""+str(self.odac)+"\"")
         print("==== ====")
         

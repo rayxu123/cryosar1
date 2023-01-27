@@ -41,7 +41,7 @@ if __name__ == "__main__":
     
     f.write("CAL:function\n")
     input("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
-    cal.calibrate_ODAC_using_weights()
+    cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
     input("CALIBRATION: Attach signal input source.  Then press ENTER.")
     
@@ -49,8 +49,9 @@ if __name__ == "__main__":
     '''
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "10000111"
-    cal.weights = [0.00000000, 1944.13029629, 1113.17884481, 639.40018669, 365.24968587, 208.87273058, 121.12694786, 70.98343100, 40.40851593, 24.33997345, 13.74714355, 8.00000000, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "10000101"
+    cal.weights = [0.00000000, 1699.73060992, 974.16061413, 559.16601586, 319.23944518, 183.02976868, 105.11439270, 61.67219357, 35.41756192, 20.59767151, 11.29345703, 6.20179749, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
