@@ -50,7 +50,7 @@ if __name__ == "__main__":
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 1699.73060992, 974.16061413, 559.16601586, 319.23944518, 183.02976868, 105.11439270, 61.67219357, 35.41756192, 20.59767151, 11.29345703, 6.20179749, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 2018.06262263, 1156.82281058, 663.97719226, 378.65321412, 217.20351402, 125.33742357, 73.72678329, 41.98767581, 24.63610840, 14.36486816, 7.98997498, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
@@ -91,8 +91,10 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
     axs.title.set_text("Calibrated")
+    print("Calibrated stddev: "+str(np.std(data)))
+    print("Calibrated range: "+str(np.ptp(data)))
     # Plot FFT
-    plotFFT(data, 25, showNow=False, title="Calibrated", save="./output/FFT_cal")
+    plotFFT(data, fpga.SER_RATE/8000000, showNow=False, title="Calibrated", save="./output/FFT_cal")
     # Save data
     np.savetxt("./output/data_cal.txt", data)
     np.savetxt("./output/data_rad2.txt", datar2)
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     axs.plot(data, marker='o')
     axs.title.set_text("UNCalibrated")
     # Plot FFT
-    plotFFT(data, 25, showNow=False, title="UNCalibrated", save="./output/FFT_uncal")
+    plotFFT(data, fpga.SER_RATE/8000000, showNow=False, title="UNCalibrated", save="./output/FFT_uncal")
     # Save data
     np.savetxt("./output/data_uncal.txt", data)
 

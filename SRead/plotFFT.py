@@ -46,19 +46,21 @@ def plotFFT(data, fs, plot=True, showNow=True, title="FFT", save=None):
     signal_power = np.sum(np.power(signal,2))
     everythingelse_low_power = np.sum(np.power(everythingelse_low,2))
     everythingelse_high_power = np.sum(np.power(everythingelse_high,2))
-    SNDR = signal_power/(everythingelse_low_power + everythingelse_high_power)  # linear ratio
+    everythingelse_power = everythingelse_low_power + everythingelse_high_power
+    SNDR = signal_power/(everythingelse_power)  # linear ratio
     SNDR = 10*np.log10(SNDR)            # dB scale
     ENOB = (SNDR-1.76)/6.02
 
     # Compute harmonic locations
     # https://www.analog.com/en/design-notes/foldedfrequency-calculator.html
     # The expression listed in the webpage text may be wrong.  The implemented expression below uses what is in the spreadsheet which is linked on the webpage.
-    numharm = 5         # Number of tones to identify including the fundamental
+    numharm = 9         # Number of tones to identify including the fundamental
     fnyquist = fs/2
     fund_freq = freq[fmax_idx]
     harm_freq = np.zeros(numharm-1)
     harm_freq_aliased = np.zeros(numharm-1)
     harm_idx = np.zeros(numharm-1)
+    harm_power = 0
     for i in np.arange(numharm-1):    
         harm_freq[i] = fund_freq*(i+2)
         #print(str(harm_freq[i]))
@@ -68,6 +70,13 @@ def plotFFT(data, fs, plot=True, showNow=True, title="FFT", save=None):
         else:
             harm_freq_aliased[i] = fnyquist - np.mod(harm_freq[i], fnyquist)
         harm_idx[i] = np.where(freq == harm_freq_aliased[i])[0][0]
+        harm_low_idx = int(max(0, harm_idx[i]-numbins))
+        harm_high_idx = int(min(len(freq)-1, harm_idx[i]+numbins))
+        harm_power = harm_power + np.sum(np.power(wave[harm_low_idx:harm_high_idx+1],2))
+    SNR = signal_power/(everythingelse_power - harm_power)
+    SNR = 10*np.log10(SNR)
+    SDR = signal_power/(harm_power)
+    SDR = 10*np.log10(SDR)
         
         
 
@@ -83,9 +92,9 @@ def plotFFT(data, fs, plot=True, showNow=True, title="FFT", save=None):
         axs_FFT.set_ylim(20*(np.floor(np.amin(PSD)/20)), 0)
         # Annotate
         if fmax_idx > len(freq)/2:
-            axs_FFT.text(freq[int(np.floor(sig_low_idx-0.1*data_len))], -SFDR+20, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits", horizontalalignment='center')
+            axs_FFT.text(freq[int(np.floor(sig_low_idx-0.1*data_len))], -SFDR+10, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits\nSNR = "+"{:.1f}".format(SNR)+" dB\nSDR = "+"{:.1f}".format(SDR)+" dB\n", horizontalalignment='center')
         else:
-            axs_FFT.text(freq[int(np.floor(sig_high_idx+0.1*data_len))], -SFDR+20, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits", horizontalalignment='center')
+            axs_FFT.text(freq[int(np.floor(sig_high_idx+0.1*data_len))], -SFDR+10, "SFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits\nSNR = "+"{:.1f}".format(SNR)+" dB\nSDR = "+"{:.1f}".format(SDR)+" dB\n", horizontalalignment='center')
 
         # Plot harmonics
         for i in np.arange(numharm-1):
