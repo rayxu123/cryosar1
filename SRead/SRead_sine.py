@@ -43,7 +43,7 @@ if __name__ == "__main__":
     
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
-    print("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
+    print("CALIBRATION: Disable any input source.  Then press ENTER.")
     input("")
     cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 2001.18053057, 1146.13623188, 658.35453555, 375.65298747, 215.30863298, 124.64842413, 72.99773980, 41.62181838, 24.95837402, 14.22076416, 8.37081909, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 1990.12417493, 1139.90736677, 654.53570833, 373.63365782, 214.02451505, 123.86979075, 72.64704623, 41.31953965, 24.69763184, 14.14653015, 8.16246033, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
