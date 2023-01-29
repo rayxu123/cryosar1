@@ -30,7 +30,7 @@ class fpga:
     DATA_FRAME_RESET = 0x00000001
     DATA_FRAME_START = 0x00000000
     FIFO_MAXDEPTH = 32768
-    SER_RATE = 100000000    # Serialization speed, in Hz.  Also main ADC clock speed.
+    SER_RATE = 92000000    # Serialization speed, in Hz.  Also main ADC clock speed.
     SER_WIDTH = 8               # Number of bits serialized in one sampling period
     ## Constants related to data parsing
     MASK_VALID = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   

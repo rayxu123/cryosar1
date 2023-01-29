@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt     # DNF: python3-matplotlib
 from bitstring import BitArray
 import fpga
 import calibration
+import logger
 
 from plotFFT import plotFFT
 
@@ -33,29 +34,34 @@ from plotFFT import plotFFT
 if __name__ == "__main__":
     fpga = fpga.fpga()
     cal = calibration.calibration(fpga)
+    sys.stdout = logger.logger("./output/log.txt")
     # Save calibration info ##
     f = open("./output/calibration.txt", "w") 
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
     f.write("CAL:function\n")
-    input("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
+    # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
+    print("CALIBRATION: Disconnect any input source and attach a 50 Ohm SMA cap.  Then press ENTER.")
+    input("")
     cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
-    input("CALIBRATION: Attach signal input source.  Then press ENTER.")
-    
-    # Uncomment here to apply pre-defined calibration values
+    print("CALIBRATION: Attach signal input source.  Then press ENTER.")
+    input("")
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 2018.06262263, 1156.82281058, 663.97719226, 378.65321412, 217.20351402, 125.33742357, 73.72678329, 41.98767581, 24.63610840, 14.36486816, 7.98997498, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 1989.35396968, 1139.27492525, 654.43539622, 373.31009882, 213.93004231, 123.86411962, 72.53364119, 41.42680110, 24.73957825, 14.12698364, 8.31486511, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -125,6 +131,8 @@ if __name__ == "__main__":
 
 
     
+
+
 
 
 
