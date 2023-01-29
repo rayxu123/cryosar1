@@ -68,6 +68,8 @@ class SControl_GUI(QMainWindow):
         if False in compare:
             self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
         if self.args.batch:
+            # Give time for settings to take effect and analog signals to settle.  Batch setting is typically used by other scripts to automate measurement.  The FTDI chip is reset and the chip is put into an unknown state each time this script is invoked, hence we want to wait for settings to take effect.
+            time.sleep(0.1) 
             sys.exit()
         
 
