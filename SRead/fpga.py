@@ -79,6 +79,10 @@ class fpga:
             valid_list = []
             datar2_list = []
             for mult_loop in range(mult):
+                # Print
+                sys.stdout.write("\rLoop %i of %i" % (mult_loop, mult))
+                sys.stdout.flush()
+
                 # Set FPGA to fill the FIFO
                 if (source == "data"):
                     self.xem.SetWireInValue(self.ADDR_WIRE, self.DATA_CHIP_RESET)
@@ -119,6 +123,8 @@ class fpga:
                 dataw_list.extend(dataw)
                 valid_list.extend(valid)
                 datar2_list.extend(fifodata)
+            sys.stdout.write("\r")
+            sys.stdout.flush()
             return dataw_list, all(valid_list), datar2_list
         else:
             # No connect is asserted
