@@ -40,7 +40,7 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
@@ -49,19 +49,19 @@ if __name__ == "__main__":
     cal.calibrate_weights()
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
-    
-    # Uncomment here to apply pre-defined calibration values
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 2027.51179201, 1161.10173475, 666.64943207, 380.76661570, 217.87952872, 126.17818135, 73.96154448, 42.02551136, 25.23843384, 14.35284424, 8.23640442, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 2006.09454297, 1148.97427933, 658.85001317, 377.08327815, 215.22337779, 124.57091282, 73.45937688, 41.22472722, 24.80801392, 14.38511658, 7.81584167, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     ## Take data ##
     # Specify number of batches.  Number of data points = 32768 * nMult
-    nMult = 64
+    nMult = 32
     RedundancyFactor = 2.0    # Combine this many LSB's together.  This divides the effective code space.
     # Apply data taking configuration + ODAC calibration
     try:
