@@ -34,9 +34,9 @@ from plotFFT import plotFFT
 if __name__ == "__main__":
     fpga = fpga.fpga()
     cal = calibration.calibration(fpga)
-    sys.stdout = logger.logger("./output/log.txt")
+    sys.stdout = logger.logger("./output/sine/log.txt")
     # Save calibration info ##
-    f = open("./output/calibration.txt", "w") 
+    f = open("./output/sine/calibration.txt", "w") 
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 1990.12417493, 1139.90736677, 654.53570833, 373.63365782, 214.02451505, 123.86979075, 72.64704623, 41.31953965, 24.69763184, 14.14653015, 8.16246033, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 2008.92589113, 1150.31848904, 660.77720483, 377.18562955, 215.87948477, 125.14257941, 73.26183885, 41.72670050, 25.01902771, 14.21276855, 8.24835205, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
@@ -97,13 +97,17 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
     axs.title.set_text("Calibrated")
-    print("Calibrated stddev: "+str(np.std(data)))
-    print("Calibrated range: "+str(np.ptp(data)))
+    print("Number of unique codes: "+str(len(np.unique(np.round(data)))))
+    print("Calibrated stddev [LSB]: "+str(np.std(data)))
+    print("Calibrated range [LSB]: "+str(np.ptp(data)))
+    print("Calibrated FS (-1dBFS) [LSB]: "+str(np.sum(cal.weights))+" ("+str(0.9*np.sum(cal.weights))+")")
+    if (np.ptp(data) > (np.sum(cal.weights)*0.9)):
+        print("WARNING: Exceeding 90% of FS")
     # Plot FFT
-    plotFFT(data, fpga.SER_RATE/8000000, showNow=False, title="Calibrated", save="./output/FFT_cal")
+    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated", save="./output/sine/FFT_cal")
     # Save data
-    np.savetxt("./output/data_cal.txt", data)
-    np.savetxt("./output/data_rad2.txt", datar2)
+    np.savetxt("./output/sine/data_cal.txt", data)
+    np.savetxt("./output/sine/data_rad2.txt", datar2)
 
 
     ## Uncalibrated data ##
@@ -122,9 +126,9 @@ if __name__ == "__main__":
     axs.plot(data, marker='o')
     axs.title.set_text("UNCalibrated")
     # Plot FFT
-    plotFFT(data, fpga.SER_RATE/8000000, showNow=False, title="UNCalibrated", save="./output/FFT_uncal")
+    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="UNCalibrated", save="./output/sine/FFT_uncal")
     # Save data
-    np.savetxt("./output/data_uncal.txt", data)
+    np.savetxt("./output/sine/data_uncal.txt", data)
 
 
     plt.show() 
