@@ -68,8 +68,10 @@ class SControl_GUI(QMainWindow):
         if False in compare:
             self.showError("Readback incorrect!  Initial programming.  Is the chip powered on?")
         if self.args.batch:
-            # Give time for settings to take effect and analog signals to settle.  Batch setting is typically used by other scripts to automate measurement.  The FTDI chip is reset and the chip is put into an unknown state each time this script is invoked, hence we want to wait for settings to take effect.
+            # Give time for settings to take effect and analog signals to settle.  Batch setting is typically used by other scripts to automate measurement.  The FTDI chip is reset and the chip is put into an unknown state each time this script is invoked, hence we want to wait for settings to take effect.            
             time.sleep(0.1) 
+            # Give time for VTH control circuit to settle.  Performance deterioriates if this delay is 0.2 or below, so set to 0.4 seconds for safe measure.  The configuration is corrupted each time the FTDI is initialized, and when it is corrupted then reprogrammed a transient occurs on the body bias control lines.
+            time.sleep(0.4) 
             sys.exit()
         
 
