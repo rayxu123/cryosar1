@@ -26,13 +26,14 @@ class pandasWriter:
     # csvFilePathPrefix: name appended to output file name
     # enableIdx: set to True to add a column with a monotonic incrementing row number (starting at 0)
     # maxRowsPerFile: maximum number of rows per csv file.  Once passed, the csv file is rotated: a new csv file is created (with the same basename) and the dataframe table is cleared, however idx keeps on incrementing
-    def __init__(self, userComments={}, csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536):
+    def __init__(self, userComments={}, csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536, compress=True):
         # Create empty dataframe 
         self.df = pd.DataFrame()
         self.idx = 0
         self.fileNum = 0
         self.enableIdx = enableIdx
         self.maxRowsPerFile = maxRowsPerFile
+        self.compress = compress
         # Create system metadata dictionary
         # 'self.start' represents timestamp at which the python program was invoked.  Do not change this.
         self.start = datetime.datetime.now()
@@ -90,7 +91,10 @@ class pandasWriter:
         filepath = Path(self.csvFilePath)  
         filepath.parent.mkdir(parents=True, exist_ok=True)
         # Write data
-        self.df.to_csv(self.csvFilePath+".gz", mode="w", index=False, compression="gzip")
+        if self.compress:
+            self.df.to_csv(self.csvFilePath+".gz", mode="w", index=False, compression="gzip")
+        else:
+            self.df.to_csv(self.csvFilePath, mode="w", index=False)
         # Update timestamp
         now = datetime.datetime.now()
         now = now.strftime('%Y%m%d_T%H%M%S')

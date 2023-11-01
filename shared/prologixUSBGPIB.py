@@ -77,7 +77,7 @@ class prologixUSBGPIB:
     
     # Write to instrument.  Linefeed (\n) is automatically appended at the end of write.
     # Returns number of bytes written sans LF
-    def write(self, instrName, cmd):
+    def write(self, instrName, cmd, wait=0):
         # Check if address needs to be updated
         if instrName not in self.instrList: raise KeyError("Instrument name '"+instrName+"' at GPIB address does not exist or was not instantiated.")
         instrAddr = self.instrList[instrName]
@@ -92,6 +92,7 @@ class prologixUSBGPIB:
         else:
             nBytes = len(cmd)
         if self.verbose: print("SERIAL: WRITE " + str((cmd+"\n").encode()))
+        time.sleep(wait)
         return nBytes
     
     # Read from instrument up to maxBytes or until CRLF is encountered.  The ending CRLF is stripped from the return string.
