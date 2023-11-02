@@ -55,7 +55,7 @@ if __name__ == "__main__":
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 1899.98148908, 1088.26450281, 625.04083619, 356.78619342, 204.37560500, 118.40178932, 69.47124312, 39.59728369, 23.71418762, 13.64108276, 7.95678711, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 1920.68248502, 1100.38512266, 631.58263482, 360.61875192, 206.56886797, 119.46094761, 70.26400187, 39.85428896, 23.86967468, 13.78109741, 7.87016296, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
@@ -104,9 +104,9 @@ if __name__ == "__main__":
     if (np.ptp(data) > (np.sum(cal.weights)*0.9)):
         print("WARNING: Exceeding 90% of FS")
     # Plot FFT
-    plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b")   # Uncomment this for rounded 11b code levels
-    plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b")    # Uncomment this for rounded 12b code levels
-    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated, 12b levels", save="./output/sine/FFT_cal_12b")    # Uncomment this for 12b code levels
+    #plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b")   # Uncomment this for rounded 11b code levels
+    #plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b")    # Uncomment this for rounded 12b code levels
+    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated, 12b levels", save="./output/sine/FFT_cal_12b", numbins=1)    # Uncomment this for 12b code levels
     # Save data
     np.savetxt("./output/sine/data_cal.txt", data)
     np.savetxt("./output/sine/data_rad2.txt", datar2)

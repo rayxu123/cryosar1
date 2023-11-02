@@ -26,7 +26,7 @@ class pandasWriter:
     # csvFilePathPrefix: name appended to output file name
     # enableIdx: set to True to add a column with a monotonic incrementing row number (starting at 0)
     # maxRowsPerFile: maximum number of rows per csv file.  Once passed, the csv file is rotated: a new csv file is created (with the same basename) and the dataframe table is cleared, however idx keeps on incrementing
-    def __init__(self, userComments={}, csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536, compress=True):
+    def __init__(self, userComments={}, folderPrefix='', csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536, compress=True):
         # Create empty dataframe 
         self.df = pd.DataFrame()
         self.idx = 0
@@ -40,7 +40,8 @@ class pandasWriter:
         self.start = self.start.strftime('%Y%m%d_T%H%M%S')
         # Set default csv file output path
         self.csvFilePrefix = csvFilePrefix
-        self.csvFilePath = "./output/run_"+self.csvFilePrefix+"_"+self.start+"_file"+str(self.fileNum)+".csv"
+        self.csvFolderPrefix = folderPrefix
+        self.csvFilePath = "./output/"+self.csvFolderPrefix+"/run_"+self.csvFilePrefix+"_"+self.start+"_file"+str(self.fileNum)+".csv"
         try:
             source = __main__.__file__
         except AttributeError:
@@ -80,7 +81,7 @@ class pandasWriter:
         if self.df.shape[0] >= self.maxRowsPerFile:
             self.writeCSV()
             self.fileNum = self.fileNum + 1
-            self.csvFilePath = "./output/run_" + self.csvFilePrefix + "_" + self.start + "_file" + str(self.fileNum) + ".csv"
+            self.csvFilePath = "./output/"+self.csvFolderPrefix+"/run_"+self.csvFilePrefix+"_"+self.start+"_file"+str(self.fileNum)+".csv"
             self.df = pd.DataFrame()
 
 
@@ -107,7 +108,10 @@ class pandasWriter:
 
     # Gets current filename
     def csvFilepath(self):
-        return self.csvFilePath+".gz"
+        if self.compress:
+            return self.csvFilePath+".gz"
+        else:
+            return self.csvFilePath
 
     # Internal method to merge two dictionaries
     def __merge(self, dict1, dict2):

@@ -43,6 +43,10 @@ class hpe3631a_gpib():
     # Measure current from +25V output (in amps)
     def measVDDCurr(self):
         return float(self.gpib.query(self.name, "MEAS:CURR? P25V", wait=0.4))
+
+    # Set instrument front display to P6V channel
+    def dispVTH(self):
+        self.gpib.write(self.name, "INST:SEL P6V", wait=0.4)
     
     # Query ID
     def IDN(self):
