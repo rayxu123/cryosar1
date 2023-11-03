@@ -69,7 +69,7 @@ if __name__ == "__main__":
                         "sweep": args.sweep,
                         "awgFreq": awgFreq,
                         "awgAmpl": awgAmpl,
-                        "numBins": args.numBins
+                        "numBins": args.numBins,
                         "userComments": ""}
     pw = pandasWriter.pandasWriter(userComments=userCommentsDict, compress=False, csvFilePrefix=os.path.splitext(os.path.basename(__file__))[0], folderPrefix=folderPrefix)
     startVolts = float(args.sweep.split(",")[0])
