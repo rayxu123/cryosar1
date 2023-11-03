@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Sweeps across VTHSET values and measures VTH, VBN, VBP, current draw, and sine wave performance.')
     parser.add_argument('-t', dest='setTemp', action='store', default=25, help="Set temperature, in celsius.  For metadata only.")
     parser.add_argument('-s', dest='sweep', action='store', default="0.25,0.02,0.45", help="VTHSET sweep in start,step,stop inclusive.  Units in volts.")
+    parser.add_argument('-n', dest='numBins', action='store', default="3", help="Number of +/- FFT bins to exclude in SNDR calculation.")
     parser.add_argument('-f', dest='awgFreq', action='store', default="1.002670288E6", help="AWG sine wave frequency, in Hz.")
     parser.add_argument('-a', dest='awgAmpl', action='store', default="1.77", help="AWG sine wave amplitude, in Vpp.  (Optimal may be 100 ADC counts below -1dBFS?)")
     parser.add_argument('--awg1MHz', dest='awg1MHz', action='store_true', default="False", help="1.002670288E6 Hz, 1.77 Vpp preset")
@@ -68,6 +69,7 @@ if __name__ == "__main__":
                         "sweep": args.sweep,
                         "awgFreq": awgFreq,
                         "awgAmpl": awgAmpl,
+                        "numBins": args.numBins
                         "userComments": ""}
     pw = pandasWriter.pandasWriter(userComments=userCommentsDict, compress=False, csvFilePrefix=os.path.splitext(os.path.basename(__file__))[0], folderPrefix=folderPrefix)
     startVolts = float(args.sweep.split(",")[0])
@@ -160,7 +162,7 @@ if __name__ == "__main__":
         data, valid_cal, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
 
         # Analyze, calibrated
-        ENOB_cal, SNDR_cal, SFDR_cal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=1)    # Uncomment this for 12b code levels
+        ENOB_cal, SNDR_cal, SFDR_cal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=int(args.numBins))    # Uncomment this for 12b code levels
         # Save data, calibrated
         np.savetxt(dataFolder+"/data_cal.txt", data)
         np.savetxt(dataFolder+"/data_cal_rad2.txt", datar2)
@@ -178,7 +180,7 @@ if __name__ == "__main__":
         data, valid_uncal, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
 
          # Analyze, uncalibrated
-        ENOB_uncal, SNDR_uncal, SFDR_uncal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=1)    # Uncomment this for 12b code levels
+        ENOB_uncal, SNDR_uncal, SFDR_uncal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=int(args.numBins))    # Uncomment this for 12b code levels
         # Save data, uncalibrated
         np.savetxt(dataFolder+"/data_uncal.txt", data)
         np.savetxt(dataFolder+"/data_uncal_rad2.txt", datar2)
