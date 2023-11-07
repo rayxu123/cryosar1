@@ -47,7 +47,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Sweeps across VTHSET values and measures VTH, VBN, VBP, current draw, and sine wave performance.')
     parser.add_argument('-t', dest='setTemp', action='store', default=25, help="Set temperature, in celsius.  For metadata only.")
     parser.add_argument('-s', dest='sweep', action='store', default="0.25,0.02,0.45", help="VTHSET sweep in start,step,stop inclusive.  Units in volts.")
-    parser.add_argument('-n', dest='numBins', action='store', default="3", help="Number of +/- FFT bins to exclude in SNDR calculation.")
     parser.add_argument('-f', dest='awgFreq', action='store', default="1.002670288E6", help="AWG sine wave frequency, in Hz.")
     parser.add_argument('-a', dest='awgAmpl', action='store', default="1.77", help="AWG sine wave amplitude, in Vpp.  (Optimal may be 100 ADC counts below -1dBFS?)")
     parser.add_argument('--awg1MHz', dest='awg1MHz', action='store_true', default="False", help="1.002670288E6 Hz, 1.77 Vpp preset")
@@ -69,7 +68,6 @@ if __name__ == "__main__":
                         "sweep": args.sweep,
                         "awgFreq": awgFreq,
                         "awgAmpl": awgAmpl,
-                        "numBins": args.numBins,
                         "userComments": ""}
     pw = pandasWriter.pandasWriter(userComments=userCommentsDict, compress=False, csvFilePrefix=os.path.splitext(os.path.basename(__file__))[0], folderPrefix=folderPrefix)
     startVolts = float(args.sweep.split(",")[0])
@@ -156,13 +154,14 @@ if __name__ == "__main__":
         AWG.setOutput(True)
 
         # Let signals settle
-        time.sleep(2)
+        time.sleep(3)
         
         # Take data, calibrated
         data, valid_cal, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
 
         # Analyze, calibrated
-        ENOB_cal, SNDR_cal, SFDR_cal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=int(args.numBins))    # Uncomment this for 12b code levels
+        ENOB_cal_numbins1, SNDR_cal_numbins1, SFDR_cal_numbins1, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=1)    # Uncomment this for 12b code levels
+        ENOB_cal_numbins3, SNDR_cal_numbins3, SFDR_cal_numbins3, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=3)    # Uncomment this for 12b code levels
         # Save data, calibrated
         np.savetxt(dataFolder+"/data_cal.txt", data)
         np.savetxt(dataFolder+"/data_cal_rad2.txt", datar2)
@@ -180,7 +179,8 @@ if __name__ == "__main__":
         data, valid_uncal, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
 
          # Analyze, uncalibrated
-        ENOB_uncal, SNDR_uncal, SFDR_uncal, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=int(args.numBins))    # Uncomment this for 12b code levels
+        ENOB_uncal_numbins1, SNDR_uncal_numbins1, SFDR_uncal_numbins1, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=1)    # Uncomment this for 12b code levels
+        ENOB_uncal_numbins3, SNDR_uncal_numbins3, SFDR_uncal_numbins3, _, _, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=False, numbins=3)    # Uncomment this for 12b code levels
         # Save data, uncalibrated
         np.savetxt(dataFolder+"/data_uncal.txt", data)
         np.savetxt(dataFolder+"/data_uncal_rad2.txt", datar2)
@@ -189,13 +189,19 @@ if __name__ == "__main__":
         dataDict = {
                     "measFolder": dataFolder,
                     "data_valid_cal": valid_cal,
-                    "ENOB_cal": ENOB_cal,
-                    "SNDR_cal": SNDR_cal,
-                    "SFDR_cal": SFDR_cal,
+                    "ENOB_cal_numbins1": ENOB_cal_numbins1,
+                    "SNDR_cal_numbins1": SNDR_cal_numbins1,
+                    "SFDR_cal_numbins1": SFDR_cal_numbins1,
+                    "ENOB_cal_numbins3": ENOB_cal_numbins3,
+                    "SNDR_cal_numbins3": SNDR_cal_numbins3,
+                    "SFDR_cal_numbins3": SFDR_cal_numbins3,
                     "data_valid_uncal": valid_uncal,
-                    "ENOB_uncal": ENOB_uncal,
-                    "SNDR_uncal": SNDR_uncal,
-                    "SFDR_uncal": SFDR_uncal,
+                    "ENOB_uncal_numbins1": ENOB_uncal_numbins1,
+                    "SNDR_uncal_numbins1": SNDR_uncal_numbins1,
+                    "SFDR_uncal_numbins1": SFDR_uncal_numbins1,
+                    "ENOB_uncal_numbins3": ENOB_uncal_numbins3,
+                    "SNDR_uncal_numbins3": SNDR_uncal_numbins3,
+                    "SFDR_uncal_numbins3": SFDR_uncal_numbins3,
                     "VTHSET_cmd": vthset,
                     "VTHSET": measVTHSET,
                     "VTH": measVTH,
@@ -210,82 +216,7 @@ if __name__ == "__main__":
     pw.writeCSV()
 
 
-    '''
-    # Initialize DUT
-    try:
-        subprocess.run(["./../SControl/SControl.py", 
-            "-b",
-            "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
-    except Exception as e:
-        sys.exit(e)
 
-    # Initialize instruments
-    gpib = prologixUSBGPIB.prologixUSBGPIB()
-    VTH = hp34401a_gpib.hp34401a_gpib(gpib, "VTH", 1)
-    VTHSET = hp34401a_gpib.hp34401a_gpib(gpib, "VTHSET", 2)
-    VBN = hp34401a_gpib.hp34401a_gpib(gpib, "VBN", 3)
-    VBP = hp34401a_gpib.hp34401a_gpib(gpib, "VBP", 4)
-    RTD = hp3458a_gpib.hp3458a_gpib(gpib, "RTD", 22)
-    PSU = hpe3631a_gpib.hpe3631a_gpib(gpib, "PSU", 10)
-
-    
-
-    # Sweep VTHSET
-    for vthset in sweepList:
-        # Debug
-        sys.stdout.write("\rSetting VTHSET={:f} in range [{:f}, {:f}, {:f}]".format(vthset, startVolts, stepVolts, stopVolts))
-        sys.stdout.flush()
-
-        # Set VTHSET        
-        PSU.setVTH(vthset)
-
-        # Let signals settle
-        time.sleep(0.1)
-
-        # Debug printing: see if signal settles after wait
-        #print(VBP.measDCV())
-        #print(VBP.measDCV())
-        #print(VBP.measDCV())
-        #print(VBP.measDCV())
-        #print(VBP.measDCV())
-        #print("====")
-        
-
-        # Measure
-        measVTHSET = VTHSET.measDCV()
-        measVTH = VTH.measDCV()
-        measVBN = VBN.measDCV()
-        measVBP = VBP.measDCV()
-        measRTDR = RTD.measResistance()
-        measRTDT = RTD.measTemperature()
-        measPSUI = PSU.measVDDCurr()
-
-        # Debug
-        #print("measVTHSET: "+str(measVTHSET))
-        #print("measVTH: "+str(measVTH))
-        #print("measVBN: "+str(measVBN))
-        #print("measVBP: "+str(measVBP))
-        #print("measRTDR: "+str(measRTDR))
-        #print("measRTDT: "+str(measRTDT))
-        #print("measPSUI: "+str(measPSUI))
-        #print("====")
-        
-
-        dataDict = {
-                    "VTHSET_cmd": vthset,
-                    "VTHSET": measVTHSET,
-                    "VTH": measVTH,
-                    "VBN": measVBN,
-                    "VBP": measVBP,
-                    "RTDR": measRTDR,
-                    "RTDT": measRTDT,
-                    "PSUI": measPSUI
-                    }
-        pw.appendData(dataDict)
-
-    print("\n")
-    pw.writeCSV()
-    '''
 
 
 

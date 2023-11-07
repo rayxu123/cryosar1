@@ -29,7 +29,7 @@ class hpe3631a_gpib():
         self.gpib.resetBuffers()
         # Initialize outputs
         self.gpib.write(self.name, "OUTP:STAT ON", wait=0.4)    # Need a delay before the next write, otherwise instrument will crash   
-        self.gpib.write(self.name, "APPL P6V, 0.0, 0.1", wait=0.4)
+        self.gpib.write(self.name, "APPL P6V, 0.6, 0.1", wait=0.4)
         self.gpib.write(self.name, "APPLy P25V, 3.8, 0.5", wait=0.4)
         #print(self.gpib.query(self.name, "APPL? P25V", wait=0.4))
         #print(self.gpib.query(self.name, "APPL? P6V", wait=0.4))
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     import prologixUSBGPIB
     gpib = prologixUSBGPIB.prologixUSBGPIB()
     instr = hpe3631a_gpib(gpib, "hpe3631a", 10)
-    instr.setVTH(0.100)
+    #instr.setVTH(0.100)
     print(instr.IDN())
     print(str(instr.measVDDCurr()))
 
