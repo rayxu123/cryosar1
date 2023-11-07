@@ -40,7 +40,7 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    '''
+    
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
@@ -49,13 +49,14 @@ if __name__ == "__main__":
     cal.calibrate_weights()
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
-    '''
-    # Uncomment here to apply pre-defined calibration values
     
+    # Uncomment here to apply pre-defined calibration values
+    '''
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 2015.18280995, 1154.39856270, 662.66275483, 378.32254476, 216.67832853, 125.36733881, 73.58890683, 41.83486600, 25.03399658, 14.34997559, 8.20101929, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.weights = [0.00000000, 2011.77830930, 1152.54969939, 661.73513042, 377.63976247, 216.38257270, 125.13928468, 73.43326749, 41.86101734, 24.98071289, 14.31860352, 8.26644897, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+
 
 
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    
+    '''
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -108,9 +109,9 @@ if __name__ == "__main__":
     if (np.ptp(data) > (np.sum(cal.weights)*0.9)):
         print("WARNING: Exceeding 90% of FS")
     # Plot FFT
-    #plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b")   # Uncomment this for rounded 11b code levels
-    #plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b")    # Uncomment this for rounded 12b code levels
-    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated, 12b levels", save="./output/sine/FFT_cal_12b", numbins=1, numharm=11)    # Uncomment this for 12b code levels
+    plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b", numharm=11)   # Uncomment this for rounded 11b code levels, but floating point arithmetic
+    plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b", numharm=11)    # Uncomment this for rounded 12b code levels, but floating point arithmetic
+    plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated, 12b levels", save="./output/sine/FFT_cal_12b", numbins=1, numharm=11)    # Uncomment this for 12b code levels, but floating point arithmetic
     # Save data
     np.savetxt("./output/sine/data_cal.txt", data)
     np.savetxt("./output/sine/data_rad2.txt", datar2)
