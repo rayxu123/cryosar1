@@ -50,6 +50,8 @@ if __name__ == "__main__":
     parser.add_argument('-f', dest='awgFreq', action='store', default="1.002670288E6", help="AWG sine wave frequency, in Hz.")
     parser.add_argument('-a', dest='awgAmpl', action='store', default="1.77", help="AWG sine wave amplitude, in Vpp.  (Optimal may be 100 ADC counts below -1dBFS?)")
     parser.add_argument('--awg1MHz', dest='awg1MHz', action='store_true', default="False", help="1.002670288E6 Hz, 1.77 Vpp preset")
+    parser.add_argument('--awg5MHz', dest='awg5MHz', action='store_true', default="False", help="4.99861145E6 Hz, 2.98 Vpp preset")
+    args = parser.parse_args()
     parser.add_argument('--awg8MHz', dest='awg8MHz', action='store_true', default="False", help="7.997146606E6 Hz, 2.00 Vpp preset")
     args = parser.parse_args()
 
@@ -58,6 +60,9 @@ if __name__ == "__main__":
     if args.awg1MHz is True:
         awgFreq = "1.002670288E6"
         awgAmpl = "1.77"
+    if args.awg5MHz is True:
+        awgFreq = "4.99861145E6"
+        awgAmpl = "2.98"
     if args.awg8MHz is True:
         awgFreq = "7.997146606E6"
         awgAmpl = "2.00"
