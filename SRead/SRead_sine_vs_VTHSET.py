@@ -122,7 +122,7 @@ if __name__ == "__main__":
         AWG.setOutput(False)
 
         # Let signals settle
-        time.sleep(1)
+        time.sleep(3)
 
         # Measure DC
         measVTHSET = VTHSET.measDCV()
