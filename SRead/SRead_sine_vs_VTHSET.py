@@ -81,7 +81,7 @@ if __name__ == "__main__":
     sweepList = np.arange(startVolts, stopVolts+stepVolts, stepVolts)
     #sweepList = np.append(sweepList, 0.36)   # Append a VTHSET=0.36V
     sweepList = np.append(sweepList, 0.6)   # Append a VTHSET=0.6V to immitate a case where VBN/VBP are fixed to VSS/VDD.
-    sweepList.reverse() # Test 'good' points (where body jcts are less likely to be fws biased) first
+    sweepList = np.flip(sweepList) # Test 'good' points (where body jcts are less likely to be fws biased) first
     itrList = list(range(len(sweepList)))
     measFolder = "./output/"+folderPrefix+"/"+os.path.splitext(os.path.basename(pw.csvFilepath()))[0]+"_meas"
     os.makedirs(measFolder)
