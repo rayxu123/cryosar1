@@ -55,10 +55,7 @@ if __name__ == "__main__":
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
     cal.odac = "10000101"
-    cal.weights = [0.00000000, 1819.79591032, 1041.03853464, 597.99527186, 341.79149944, 194.93114739, 113.30772449, 66.19399382, 37.60897185, 22.91200256, 12.70472717, 7.12258911, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
-
-
-
+    cal.weights = [0.00000000, 2029.20936244, 1162.66272324, 666.89049230, 381.18317549, 218.11869021, 126.09133763, 74.31199155, 41.95491011, 25.10934448, 14.50738525, 8.05995178, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
 
@@ -110,8 +107,8 @@ if __name__ == "__main__":
     if (np.ptp(data) > (np.sum(cal.weights)*0.9)):
         print("WARNING: Exceeding 90% of FS")
     # Plot FFT
-    plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b", numharm=11)   # Uncomment this for rounded 11b code levels, but floating point arithmetic
-    plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b", numharm=11)    # Uncomment this for rounded 12b code levels, but floating point arithmetic
+    #plotFFT(np.round(np.array(data)/2), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 11b levels", save="./output/sine/FFT_cal_rounded11b", numharm=11)   # Uncomment this for rounded 11b code levels, but floating point arithmetic
+    #plotFFT(np.round(np.array(data)), fpga.SER_RATE/8, showNow=False, title="Calibrated, rounded 12b levels", save="./output/sine/FFT_cal_rounded12b", numharm=11)    # Uncomment this for rounded 12b code levels, but floating point arithmetic
     plotFFT(data, fpga.SER_RATE/8, showNow=False, title="Calibrated, 12b levels", save="./output/sine/FFT_cal_12b", numbins=3, numharm=11)    # Uncomment this for 12b code levels, but floating point arithmetic
     # Save data
     np.savetxt("./output/sine/data_cal.txt", data)
