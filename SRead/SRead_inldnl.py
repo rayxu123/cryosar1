@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     ## Take data ##
     # Specify number of batches.  Number of data points = 32768 * nMult
-    nMult = 64
+    nMult = 16
     RedundancyFactor = 2.0    # Combine this many LSB's together.  This divides the effective code space.
     # Apply data taking configuration + ODAC calibration
     try:
