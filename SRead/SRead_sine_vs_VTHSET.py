@@ -123,7 +123,7 @@ if __name__ == "__main__":
         AWG.setOutput(False)
 
         # Let signals settle
-        time.sleep(3)
+        time.sleep(5)
 
         # Measure DC
         measVTHSET = VTHSET.measDCV()
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         AWG.setOutput(True)
 
         # Let signals settle
-        time.sleep(3)
+        time.sleep(5)
         
         # Take data, calibrated
         data, valid_cal, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
