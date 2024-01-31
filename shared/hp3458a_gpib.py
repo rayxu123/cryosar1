@@ -41,6 +41,14 @@ class hp3458a_gpib():
         self.gpib.resetBuffers()
         return meas
 
+    # Measure VDC with a range of 100mV
+    def measVDC100mV(self):
+        self.gpib.resetBuffers()
+        self.gpib.write(self.name, "DCV 0.1")
+        meas = float(self.gpib.query(self.name, "TRIG SGL"))
+        self.gpib.resetBuffers()
+        return meas
+
     # Measure resistance
     def measResistance(self, twoWire=False):
         self.gpib.resetBuffers()
@@ -67,8 +75,9 @@ if __name__ == "__main__":
     gpib = prologixUSBGPIB.prologixUSBGPIB()
     instr = hp3458a_gpib(gpib, "hp3458a", 22)
     print(instr.IDN())
-    print(str(instr.measResistance()))
-    print(str(instr.measTemperature()))
+    print(str(instr.measVDC100mV()))
+    #print(str(instr.measResistance()))
+    #print(str(instr.measTemperature()))
 
 
 
