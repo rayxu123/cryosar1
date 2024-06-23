@@ -49,6 +49,14 @@ class hp3458a_gpib():
         self.gpib.resetBuffers()
         return meas
 
+    # Measure IDC with a range of 10uA
+    def measIDC10uA(self):
+        self.gpib.resetBuffers()
+        self.gpib.write(self.name, "DCI 10E-6")
+        meas = float(self.gpib.query(self.name, "TRIG SGL"))
+        self.gpib.resetBuffers()
+        return meas
+
     # Measure resistance
     def measResistance(self, twoWire=False):
         self.gpib.resetBuffers()
@@ -75,7 +83,8 @@ if __name__ == "__main__":
     gpib = prologixUSBGPIB.prologixUSBGPIB()
     instr = hp3458a_gpib(gpib, "hp3458a", 22)
     print(instr.IDN())
-    print(str(instr.measVDC100mV()))
+    print(str(instr.measIDC10uA()))
+    #print(str(instr.measVDC100mV()))
     #print(str(instr.measResistance()))
     #print(str(instr.measTemperature()))
 
