@@ -31,7 +31,7 @@ if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
 if __name__ == "__main__":
     # Initialize argument parser
     parser = argparse.ArgumentParser(description='CryoSAR1 interactive digital slow-control via FTDI MPSSE SPI.')
-    parser.add_argument('-a', dest='addr', action='store', default='ftdi://ftdi:232h:FT6X0PWN/1', help="FTDI address.  (Default: 'ftdi://ftdi:232h:FT6X0PWN/1')")
+    parser.add_argument('-a', dest='addr', action='store', default='ftdi://ftdi:2232:FT73TM02/1', help="FTDI address.  (Default: 'ftdi://ftdi:2232:FT73TM02/1')")
     parser.add_argument('-b', dest='batch', action='store_true', default=False, help="Launch in batch mode.  Program, verify, then exit.  Use with -f.")
     parser.add_argument('-l', dest='listFTDI', action='store_true', help="Lists available FTDI addresses and exits", default=False)
     parser.add_argument('-f', dest='cfgFile', action='store', default='./config/CryoSAR1.cfg',
