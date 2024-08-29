@@ -10,7 +10,7 @@ plotFFT
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt     # DNF: python3-matplotlib
-from mpldatacursor import datacursor    # pip3: mpldatacursor as root
+#from mpldatacursor import datacursor    # pip3: mpldatacursor as root
 
 
 # function to plot FFT
@@ -112,7 +112,7 @@ def plotFFT(data, fs, plot=True, showNow=True, title=None, save=None, numharm=9,
             axs_FFT.plot(freq[int(harm_idx[int(i)])], PSD[int(harm_idx[int(i)])], marker="^", mec="red", mfc="red", mew=2)
             axs_FFT.text(freq[int(harm_idx[int(i)])], PSD[int(harm_idx[int(i)])]+5, str(i+2), fontweight='bold', color='red', horizontalalignment='center')
 
-        datacursor(lines)
+        #datacursor(lines)
         if showNow: plt.show() 
 
         if save is not None: plt.savefig(save)

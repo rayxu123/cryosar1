@@ -36,7 +36,7 @@ if __name__ == "__main__":
     cal = calibration.calibration(fpga)
     sys.stdout = logger.logger("./output/sine/log.txt")
     # Save calibration info ##
-    f = open("./output/sine/calibration.txt", "w") 
+    f = open("./output/sine/calibration.txt", "w+") 
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
     input("")
-    cal.calibrate_ODAC_using_weights_v2()
+    #cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
@@ -85,7 +85,8 @@ if __name__ == "__main__":
     ## Calibrated data ##
     # Apply data taking configuration + ODAC calibration
     try:
-        subprocess.run(["./../SControl/SControl.py", 
+        subprocess.run([sys.executable, 
+            "./../SControl/SControl.py", 
             "-b",
             "-o", "ODAC_CODE,"+cal.odac,
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
@@ -116,7 +117,8 @@ if __name__ == "__main__":
     ## Uncalibrated data ##
     # Apply data taking configuration + ODAC calibration
     try:
-        subprocess.run(["./../SControl/SControl.py", 
+        subprocess.run([sys.executable, 
+            "./../SControl/SControl.py", 
             "-b",
             "-o", "ODAC_CODE,"+cal.CAL_ODAC_DEFAULT,
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)

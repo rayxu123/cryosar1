@@ -3,7 +3,7 @@ import sys
 class logger(object):
     def __init__(self, fname):
         self.terminal = sys.stdout
-        self.log = open(fname, "w")
+        self.log = open(fname, "w+")
    
     def write(self, message):
         self.terminal.write(message)

@@ -51,7 +51,7 @@ class calibration:
         # TODO: remove hard code
         #self.odac = "10100001"
         #self.odac = "10000000"
-        #self.odac = "10000101"  # Using weights method
+        self.odac = "10000101"  # Using weights method.  In V3 setup sometimes comparator offset cal will not converge, probably because the serial data output is not DC balanced so it reads in noise when it is a DC value.  A bad ODAC value will cause normal calibration to fail.  This value is probably the closest to true ODAC.
         #self.odac = "10000000"
         self.weights = None
         
@@ -64,7 +64,8 @@ class calibration:
             args.insert(b*2,"-o")
 
         try:
-            subprocess.run(["./../SControl/SControl.py", 
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
                 "-b"]
                 + args +
                 ["-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
