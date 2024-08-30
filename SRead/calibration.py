@@ -34,6 +34,7 @@ class calibration:
     CAL_ODAC_BITWIDTH = 8
     CAL_ODAC_START = 2                                                      # Only evaluate LSB
     CAL_ODAC_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])  # Only enable slices that have known/assumed weights
+    CAL_ODAC_CONV = 3                                                       # Quit ODAC calibration when the mean is within +/- this many LSBs
     ## Constants related to weight calibration (first 3 weights are fixed)
     CAL_WEIGHTS_MULT = 1       # multiplicity: number of 32768 samples to consider for averaging
     CAL_WEIGHTS_WIDTH = 15      # Total number of calibrate-able bits
@@ -51,8 +52,9 @@ class calibration:
         # TODO: remove hard code
         #self.odac = "10100001"
         #self.odac = "10000000"
-        self.odac = "10000101"  # Using weights method.  In V3 setup sometimes comparator offset cal will not converge, probably because the serial data output is not DC balanced so it reads in noise when it is a DC value.  A bad ODAC value will cause normal calibration to fail.  This value is probably the closest to true ODAC.
-        #self.odac = "10000000"
+        #self.odac = "10000101"  # Using weights method.  In V3 setup sometimes comparator offset cal will not converge, probably because the serial data output is not DC balanced so it reads in noise when it is a DC value.  A bad ODAC value will cause normal calibration to fail.  This value is probably the closest to true ODAC.
+        #self.odac = "01110100"      # Experimentally found for V3 DUT D3
+        #self.odac = "10000101"     # Experimentally found for V3 DUT D1
         self.weights = None
         
 
@@ -202,7 +204,7 @@ class calibration:
         print("==== ODAC CALIBRATION (weights method)====")
         print("Calibrated ODAC: \""+str(self.odac)+"\"")
         print("==== ====")
-
+        
     # Version 2, more closely imitates calibrate_weights
     # Only imitate the first bit calibration in calibrate_weights
     def calibrate_ODAC_using_weights_v2(self, bsel=False):
@@ -270,6 +272,26 @@ class calibration:
             # Take data
             data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
             force1 = np.mean(data)
+            # Debug printing
+            print("== ITERATION "+str(i)+" ==")
+            print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+            print("Current ODAC uint8: "+str(odac_value))
+            print("Force 0: "+str(force0))
+            print("Force 1: "+str(force1))
+            print("Current Mean: "+str(np.mean([force0, force1])))
+            
+            # Check if calibration already converged (if so then quit)
+            if np.abs(np.mean([force0, force1])) <= self.CAL_ODAC_CONV:
+                print("ODAC Calibration converged.")
+                break
+               
+            '''
+            # Check if calibration already converged by seeing if neither force0 nor force1 overflowed
+            if (np.abs(force0) != 11) and (np.abs(force1) != 11):
+                print("ODAC Calibration converged.")
+                break
+            '''    
+            # Apply ODAC correction if not yet converged
             if bsel is False:
                 if (np.mean([force0, force1]) > 0):
                     odac_value = odac_value - odac_weight
@@ -282,13 +304,8 @@ class calibration:
                     odac_value = odac_value - odac_weight
             # Set up next iteration
             odac_weight = np.ceil(odac_weight/2)
-            # Debug printing
-            print("== ITERATION "+str(i)+" ==")
-            print("Force 0: "+str(force0))
-            print("Force 1: "+str(force1))
-            print("Mean: "+str(np.mean([force0, force1])))
-            print("ODAC uint8: "+str(odac_value))
-            print("ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+            
+                
         # Update class attribute
         self.odac = BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
         # Check the final value of self.odac
@@ -298,8 +315,8 @@ class calibration:
                 "B_SEL,0",
                 "CAL_DIR_P,0",
                 "CAL_DIR_N,0",
-                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "CAL_FORCE_N,"+cal_force,
+                "CAL_FORCE_P,"+cal_force,
+                "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
                 "SLICE_EN_P,"+cal_sliceen,
                 "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
                 "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
@@ -324,8 +341,8 @@ class calibration:
                 "B_SEL,0",
                 "CAL_DIR_P,1",
                 "CAL_DIR_N,1",
-                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "CAL_FORCE_N,"+cal_force,
+                "CAL_FORCE_P,"+cal_force,
+                "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
                 "SLICE_EN_P,"+cal_sliceen,
                 "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
                 "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
