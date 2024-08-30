@@ -17,37 +17,77 @@ Requires the packages:
 
 
 from pyftdi.ftdi import Ftdi
-from pyftdi import spi
+from pyftdi import spi, gpio
 
 import sys
 #sys.path.insert(0, './pyftdi-cs_act_hi/pyftdi/')
 #import ftdi
-#import spi
+#import spi, gpio
 import time
 import subprocess
 
 from bitstring import BitArray
 
+# Some constants for ADC GPIO on the hacked-up second FTDI FT2232 module
+SPISEL10_MASK = 0x03 # GPIO AD1,0
+SPISEL1_MASK = 0x02 # GPIO AD1
+SPISEL0_MASK = 0x01 # GPIO AD0
+
+## HACK: 
+# SPIMUX is a bool to determine if this class controls the DUT or the AD5313/AD7888 combo.
+# A secibd FTDI module is needed for the AD5313/AD7888 combo because a SPI MUX in hardware needs to be controlled.
+
 class ftdispi:
-    def __init__(self, addr=None, noConnect=False, csacthi=False, mode=0):
+    def __init__(self, addr=None, noConnect=False, csacthi=False, mode=0, SPIMUX=False):
         self.noConnect = noConnect
+        self.SPIMUX = SPIMUX
         if addr is None:
             self.list()
             raise ValueError("Must connect to a FTDI device.")
         else:
             if not self.noConnect:
-                self.ftdi = spi.SpiController()
+                if SPIMUX is True:
+                    self.ftdi = spi.SpiController(cs_count=4)
+                else:
+                    self.ftdi = spi.SpiController()
+                '''
                 if csacthi:
                      self.ftdi.configure(addr, cs_act_hi=(0, 0))
                 else:
                     self.ftdi.configure(addr)
-                # Get a SPI port to a SPI slave w/ /CS on A*BUS3 and SPI mode 0 @ 1MHz
-                self.spi = self.ftdi.get_port(cs=0, freq=1E6, mode=mode)
-                self.spi.flush()
+                '''
+                self.ftdi.configure(addr)
+                    
+                ## HACK: Set SPI MUX using a second FTDI FT2232 device on bus A.
+                if SPIMUX is True:
+                    self.mux = gpio.GpioAsyncController()
+                    self.mux.configure('ftdi://ftdi:2232:FT74A2JW/1')
+                    
+                if SPIMUX is True:
+                    # Get 3 SPI ports to a SPI slave w/ /CS on A*BUS3,4,5,6 and SPI mode 0 @ 1MHz
+                    self.spi = self.ftdi.get_port(cs=0, freq=1E6, mode=mode)
+                    self.spi.flush()
+                    self.adc1 = self.ftdi.get_port(cs=1, freq=1E6, mode=mode)
+                    self.adc1.flush()
+                    self.adc2 = self.ftdi.get_port(cs=2, freq=1E6, mode=mode)
+                    self.adc2.flush()
+                    self.adc3 = self.ftdi.get_port(cs=3, freq=1E6, mode=mode)
+                    self.adc3.flush()
+                else:
+                    # Get a SPI port to a SPI slave w/ /CS on A*BUS3 and SPI mode 0 @ 1MHz
+                    self.spi = self.ftdi.get_port(cs=0, freq=1E6, mode=mode)
+                    self.spi.flush()
+                    
                 # Get BDBUS7 and set to logic high output
                 self.gpio = self.ftdi.get_gpio()
                 self.gpio.set_direction(0x80, 0x80)
                 self.gpio.write(0x80)
+                
+                # Default setting for SPIMUX. The SPI MUX and the two outputs have no effect on the DAC.
+                if SPIMUX is True:
+                    self.mux.set_direction(0xFF & SPISEL10_MASK, 0xFF & SPISEL10_MASK)
+                    self.setSPIMUX(0)
+                    
 
 
     def list(self):
@@ -68,6 +108,31 @@ class ftdispi:
                 self.gpio.write(0x80)
             else:
                 self.gpio.write(0x00)
+                
+    # Sets SPI Mux
+    # val = 0: ADC2
+    # val = 1: ADC3
+    # val = 2: DAC
+    # val = 3: ADC1
+    def setSPIMUX(self, val):
+        if self.SPIMUX is True:
+            if val == 0:    self.mux.write(0x00 & SPISEL10_MASK)
+            elif val == 1:  self.mux.write(0x01 & SPISEL10_MASK)
+            elif val == 2:  self.mux.write(0x02 & SPISEL10_MASK)
+            elif val == 3:  self.mux.write(0x03 & SPISEL10_MASK)
+            else: print("Invalid!")
+        else: print("Not supported!")
+        time.sleep(0.1) # Let signal settle
+    
+    # Reads from AD71888
+    # Addr is int 0-7 for inputs 1-8
+    # Returns unsigned int of the ADC value.  To get volts, multiply by 2.5/4096
+    def readAD7188(self, spiObj, addr):
+        bitsWr = BitArray(bin='00'+BitArray(uint=addr, length=3).bin+'1'+'00'+'00000000')
+        bitsRead = spiObj.exchange(out=bitsWr.bytes, readlen=int(bitsWr.len/8), start=True, stop=True, duplex=True)
+        bitsRead = BitArray(bytes=bitsRead)
+        return bitsRead.uint
+
 
     # Returns next greater multiple of 8
     def RoundUp8(self, x):

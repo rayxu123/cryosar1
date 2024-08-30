@@ -20,6 +20,7 @@ from PyQt5 import QtWidgets,QtCore
 from PyQt5.QtWidgets import QApplication
 from pyftdi.ftdi import Ftdi
 import SControl_DAC_GUI
+import SControl_ADC
 
 
 #sys.path.insert(0, './pyftdi-cs_act_hi/')
@@ -43,6 +44,8 @@ if __name__ == "__main__":
                         help="No-connect mode.  (Default: False)")
     parser.add_argument('-o', dest='override', action='append',
                         help="Overrides specific fields on startup.  May specify more than once.  Specified as '<field name>,<value>' pairs.  Where <field name> is from the section name and <value> must be a bit string in order of MSB...LSB.  For example, 'ODAC_CODE,11111111' or 'CAL_FORCE_P,000111111111111'.  Field min and max must be obeyed, otherwise the bitstring will be truncated.")
+    parser.add_argument('-r', dest='read', action='store_true', default=False, help="Reads from ADC's, writes values to an output file, and exit.  DAC settings are not touched.")
+    parser.add_argument('-q', dest='quiet', action='store_true', default=False, help="Do not print ADC output to console.")
     args = parser.parse_args()
     # Launch application
     if args.listFTDI:
@@ -50,7 +53,12 @@ if __name__ == "__main__":
         Ftdi.show_devices()
         sys.exit()
     else:
-        app = QApplication(sys.argv)
-        window = SControl_DAC_GUI.SControl_DAC_GUI(args)
-        window.show()
-        sys.exit(app.exec_())
+        if args.read is False:
+            app = QApplication(sys.argv)
+            window = SControl_DAC_GUI.SControl_DAC_GUI(args)
+            window.show()
+            sys.exit(app.exec_())
+        else:
+            SControl_ADC.SControl_ADC(args)
+            
+
