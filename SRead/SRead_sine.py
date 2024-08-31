@@ -47,6 +47,9 @@ if __name__ == "__main__":
     input("")
     cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
+    print("Calibrated ODAC: \""+str(cal.odac)+"\"")
+    print("Calibrated weight:")
+    print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
     
@@ -54,8 +57,8 @@ if __name__ == "__main__":
     '''
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "10000101"
-    cal.weights = [0.00000000, 1775.14852308, 1015.94729481, 582.89937631, 333.59561435, 190.26649883, 110.40312680, 64.93664121, 36.63664646, 22.28968811, 12.72325134, 7.11093140, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01110101"
+    cal.weights = [0.00000000, 1849.58558608, 1059.78637777, 608.39039525, 347.40751953, 199.19652066, 115.25148033, 67.70483045, 38.62405928, 23.05784607, 13.37936401, 7.63604736, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
@@ -95,6 +98,7 @@ if __name__ == "__main__":
     # Take data
     time.sleep(3) 
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+    if valid is False: print("WARNING: non-valid sample encountered!")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
@@ -126,6 +130,7 @@ if __name__ == "__main__":
         sys.exit(e)
     # Take data
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
+    if valid is False: print("WARNING: non-valid sample encountered!")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.plot(data, marker='o')
