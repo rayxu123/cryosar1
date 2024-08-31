@@ -34,7 +34,7 @@ class calibration:
     CAL_ODAC_BITWIDTH = 8
     CAL_ODAC_START = 2                                                      # Only evaluate LSB
     CAL_ODAC_SEED = np.multiply(CAL_WEIGHTS_DEFAULT, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])  # Only enable slices that have known/assumed weights
-    CAL_ODAC_CONV = 3                                                       # Quit ODAC calibration when the mean is within +/- this many LSBs
+    #CAL_ODAC_CONV = 3                                                       # Quit ODAC calibration when the mean is within +/- this many LSBs
     ## Constants related to weight calibration (first 3 weights are fixed)
     CAL_WEIGHTS_MULT = 1       # multiplicity: number of 32768 samples to consider for averaging
     CAL_WEIGHTS_WIDTH = 15      # Total number of calibrate-able bits
@@ -215,6 +215,11 @@ class calibration:
         cal_index = self.CAL_WEIGHTS_START
         cal_force = BitArray(uint=int(pow(2,cal_index-1)), length=self.CAL_WEIGHTS_WIDTH).bin
         cal_sliceen = BitArray(uint=int(pow(2,cal_index)-1), length=self.CAL_WEIGHTS_WIDTH).bin
+        # Keep a running record of ODAC values 
+        odac_list = []
+        mean_list = []
+        force0_list = []
+        force1_list = []
         for i in range(self.CAL_ODAC_ITER+redundancy):
             # Set ODAC code, force 0
             if bsel is False:
@@ -244,6 +249,7 @@ class calibration:
             # Take data
             data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
             force0 = np.mean(data)
+            force0_list.append(force0)
             # Set ODAC code, force 1
             if bsel is False:
                 self.__config([
@@ -272,6 +278,7 @@ class calibration:
             # Take data
             data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
             force1 = np.mean(data)
+            force1_list.append(force1)
             # Debug printing
             print("== ITERATION "+str(i)+" ==")
             print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
@@ -280,18 +287,23 @@ class calibration:
             print("Force 1: "+str(force1))
             print("Current Mean: "+str(np.mean([force0, force1])))
             
+            # Keep record 
+            mean_list.append(np.mean([force0, force1]))
+            odac_list.append(odac_value)
+            
+            '''
             # Check if calibration already converged (if so then quit)
             if np.abs(np.mean([force0, force1])) <= self.CAL_ODAC_CONV:
                 print("ODAC Calibration converged.")
                 break
-               
+            '''
             '''
             # Check if calibration already converged by seeing if neither force0 nor force1 overflowed
             if (np.abs(force0) != 11) and (np.abs(force1) != 11):
                 print("ODAC Calibration converged.")
                 break
             '''    
-            # Apply ODAC correction if not yet converged
+            # Apply ODAC correction 
             if bsel is False:
                 if (np.mean([force0, force1]) > 0):
                     odac_value = odac_value - odac_weight
@@ -306,9 +318,8 @@ class calibration:
             odac_weight = np.ceil(odac_weight/2)
             
                 
-        # Update class attribute
-        self.odac = BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
-        # Check the final value of self.odac
+        
+        # Check the final value ODAC value after the last iteration's correction  
         if bsel is False:
             self.__config([
                 "CAL_EN,1",
@@ -335,6 +346,7 @@ class calibration:
             ])
         data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
         force0 = np.mean(data)
+        force0_list.append(force0)
         if bsel is False:
             self.__config([
                 "CAL_EN,1",
@@ -361,11 +373,31 @@ class calibration:
             ])
         data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
         force1 = np.mean(data)
-        print("==== ODAC CALIBRATION (weights method v2)====")
+        force1_list.append(force1)
+        # Debug printing
+        print("== LAST ITERATION ==")
+        print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+        print("Current ODAC uint8: "+str(odac_value))
         print("Force 0: "+str(force0))
         print("Force 1: "+str(force1))
-        print("Final Mean: "+str(np.mean([force0, force1])))
-        print("Calibrated ODAC: \""+str(self.odac)+"\"")
+        print("Current Mean: "+str(np.mean([force0, force1])))
+        
+        
+        # Add record of the last update to odac_value 
+        mean_list.append(np.mean([force0, force1]))
+        odac_list.append(odac_value)
+        
+        # Pick the most optimal ODAC value 
+        idx = np.argmin(np.abs(mean_list))
+        odac_optimal = odac_list[idx]
+        
+        # Update class attribute
+        self.odac = BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin
+        print("==== ODAC CALIBRATION (weights method v2)====")
+        print("Force 0: "+str(force0_list[idx]))
+        print("Force 1: "+str(force1_list[idx]))
+        print("Final Mean: "+str(mean_list[idx]))
+        print("Calibrated ODAC: \""+BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin+"\"")
         print("==== ====")
         
 
