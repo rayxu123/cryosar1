@@ -12,13 +12,17 @@ Why does Keysight libioTraceHelper segfault when pytho exits ??
 
 import time
 import pyvisa
+import platform
 
 class hp33220a_visa():
     # Inputs:
     # addr: VISA resource address
     def __init__(self, addr='USB0::0x0957::0x0407::MY44012701::0::INSTR'):
         # Initialize instrument
-        rm = pyvisa.ResourceManager('/opt/keysight/iolibs/libktvisa32.so')  # Point this to Keysight IO Libraries kernel drivers
+        if platform.system() == "Linux":
+            rm = pyvisa.ResourceManager('/opt/keysight/iolibs/libktvisa32.so')  # Point this to Keysight IO Libraries kernel drivers
+        else:
+            rm = pyvisa.ResourceManager()
         self.inst = rm.open_resource(addr)
         # Initialize output
         self.freq = 1e6
@@ -53,12 +57,12 @@ class hp33220a_visa():
 
 
 if __name__ == "__main__":
-    instr = hp33220a_visa()
+    instr = hp33220a_visa('USB0::0x0957::0x0407::MY44012694::INSTR')
     print(instr.IDN())
-    instr.initSine(2.000778198e6, 2.25)
-    instr.setOutput(False)
-    time.sleep(1)
-    instr.setOutput(True)
+    #instr.initSine(2.000778198e6, 2.25)
+    #instr.setOutput(False)
+    #time.sleep(1)
+    #instr.setOutput(True)
 
 
 

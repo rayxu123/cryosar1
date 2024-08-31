@@ -40,7 +40,7 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
@@ -52,19 +52,19 @@ if __name__ == "__main__":
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
-    
-    # Uncomment here to apply pre-defined calibration values
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "01110101"
-    cal.weights = [0.00000000, 1849.58558608, 1059.78637777, 608.39039525, 347.40751953, 199.19652066, 115.25148033, 67.70483045, 38.62405928, 23.05784607, 13.37936401, 7.63604736, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01110100"
+    cal.weights = [0.00000000, 1927.12562946, 1103.68081661, 633.68289230, 361.96534710, 207.08216477, 119.99947794, 70.22991816, 39.93223623, 23.95819092, 13.61462402, 7.76640320, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if valid is False: print("WARNING: non-valid sample encountered!")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.plot(data, marker='o')
+    line = axs.plot(data, marker='o')
     axs.title.set_text("Calibrated")
     print("Number of unique codes: "+str(len(np.unique(np.round(data)))))
     print("Calibrated stddev [LSB]: "+str(np.std(data)))
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if valid is False: print("WARNING: non-valid sample encountered!")
     # Plot time domain
     fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.plot(data, marker='o')
+    line = axs.plot(data, marker='o')
     axs.title.set_text("UNCalibrated")
     # Plot FFT
     plotFFT(data, fpga.SER_RATE/8, showNow=False, title="UNCalibrated", save="./output/sine/FFT_uncal")
