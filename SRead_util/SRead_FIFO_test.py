@@ -32,7 +32,7 @@ if __name__ == "__main__":
     DATA_FRAME_RESET = 0x00000001
     DATA_FRAME_START = 0x00000000
     FIFO_DEPTH = 32768
-    SER_RATE = 20000000    # Serialization speed, in MHz
+    SER_RATE = 144000000    # Serialization speed, in MHz
     SER_WIDTH = 8               # Number of bits serialized in one sampling period
     WAIT_FOR_DATA = (FIFO_DEPTH*1.2)/(SER_RATE/SER_WIDTH)  # Expression to wait for the FIFO to fill + 20% margin
     #### End Define constants ####
