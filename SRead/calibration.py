@@ -207,7 +207,7 @@ class calibration:
         
     # Version 2, more closely imitates calibrate_weights
     # Only imitate the first bit calibration in calibrate_weights
-    def calibrate_ODAC_using_weights_v2(self, bsel=False):
+    def calibrate_ODAC_using_weights_v2(self, bsel=False, verbose=True):
         # Initial conditions   
         redundancy = 0  # Extra steps to take     
         odac_value = 0
@@ -280,12 +280,13 @@ class calibration:
             force1 = np.mean(data)
             force1_list.append(force1)
             # Debug printing
-            print("== ITERATION "+str(i)+" ==")
-            print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
-            print("Current ODAC uint8: "+str(odac_value))
-            print("Force 0: "+str(force0))
-            print("Force 1: "+str(force1))
-            print("Current Mean: "+str(np.mean([force0, force1])))
+            if verbose is True:
+                print("== ITERATION "+str(i)+" ==")
+                print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+                print("Current ODAC uint8: "+str(odac_value))
+                print("Force 0: "+str(force0))
+                print("Force 1: "+str(force1))
+                print("Current Mean: "+str(np.mean([force0, force1])))
             
             # Keep record 
             mean_list.append(np.mean([force0, force1]))
@@ -375,12 +376,13 @@ class calibration:
         force1 = np.mean(data)
         force1_list.append(force1)
         # Debug printing
-        print("== LAST ITERATION ==")
-        print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
-        print("Current ODAC uint8: "+str(odac_value))
-        print("Force 0: "+str(force0))
-        print("Force 1: "+str(force1))
-        print("Current Mean: "+str(np.mean([force0, force1])))
+        if verbose is True:
+            print("== LAST ITERATION ==")
+            print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+            print("Current ODAC uint8: "+str(odac_value))
+            print("Force 0: "+str(force0))
+            print("Force 1: "+str(force1))
+            print("Current Mean: "+str(np.mean([force0, force1])))
         
         
         # Add record of the last update to odac_value 
@@ -393,16 +395,17 @@ class calibration:
         
         # Update class attribute
         self.odac = BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin
-        print("==== ODAC CALIBRATION (weights method v2)====")
-        print("Force 0: "+str(force0_list[idx]))
-        print("Force 1: "+str(force1_list[idx]))
-        print("Final Mean: "+str(mean_list[idx]))
-        print("Calibrated ODAC: \""+BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin+"\"")
-        print("==== ====")
+        if verbose is True:
+            print("==== ODAC CALIBRATION (weights method v2)====")
+            print("Force 0: "+str(force0_list[idx]))
+            print("Force 1: "+str(force1_list[idx]))
+            print("Final Mean: "+str(mean_list[idx]))
+            print("Calibrated ODAC: \""+BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin+"\"")
+            print("==== ====")
         
 
     # Calibrate weights starting from LSB
-    def calibrate_weights(self):
+    def calibrate_weights(self, verbose=True):
         # Initial conditions
         weights_pdac = self.CAL_WEIGHTS_SEED.copy()     # Perform deep copy!
         weights_ndac = self.CAL_WEIGHTS_SEED.copy()     # Perform deep copy!
@@ -411,9 +414,10 @@ class calibration:
             cal_force = BitArray(uint=int(pow(2,cal_index-1)), length=self.CAL_WEIGHTS_WIDTH).bin
             cal_sliceen = BitArray(uint=int(pow(2,cal_index)-1), length=self.CAL_WEIGHTS_WIDTH).bin
             
-            print("== BIT "+str(cal_index)+" ==")
-            print("cal force vector: "+cal_force)
-            print("slice enable vector: "+cal_sliceen)
+            if verbose is True:
+                print("== BIT "+str(cal_index)+" ==")
+                print("cal force vector: "+cal_force)
+                print("slice enable vector: "+cal_sliceen)
             
             # Set P-DAC (bsel=0), direction 0 (cal_force=0)
             self.__config([
@@ -430,7 +434,7 @@ class calibration:
             # Take data, get mean 
             data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
             w_pdac_force0 = np.mean(data)
-            print("Measured P-DAC force 0: "+str(w_pdac_force0))
+            if verbose is True: print("Measured P-DAC force 0: "+str(w_pdac_force0))
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
             #axs.plot(data, marker='o')
@@ -452,7 +456,7 @@ class calibration:
             # Take data, get mean 
             data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
             w_pdac_force1 = np.mean(data)
-            print("Measured P-DAC force 1: "+str(w_pdac_force1))
+            if verbose is True: print("Measured P-DAC force 1: "+str(w_pdac_force1))
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
             #axs.plot(data, marker='o')
@@ -461,10 +465,11 @@ class calibration:
 
             # Calculate intermediate weight
             w_pdac = (w_pdac_force1 - w_pdac_force0)*0.5
-            print("Measured P-DAC weight: "+str(w_pdac))
             weights_pdac[-cal_index] = w_pdac
-            print("P-DAC weights:")
-            print(["{0:0.3f}".format(i) for i in weights_pdac])
+            if verbose is True:
+                print("Measured P-DAC weight: "+str(w_pdac))
+                print("P-DAC weights:")
+                print(["{0:0.3f}".format(i) for i in weights_pdac])
             
             
             # Set N-DAC (bsel=1), direction 0 (cal_force=0)
@@ -482,7 +487,7 @@ class calibration:
             # Take data, get mean 
             data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
             w_ndac_force0 = np.mean(data)
-            print("Measured N-DAC force 0: "+str(w_ndac_force0))
+            if verbose is True: print("Measured N-DAC force 0: "+str(w_ndac_force0))
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
             #axs.plot(data, marker='o')
@@ -504,7 +509,7 @@ class calibration:
             # Take data, get mean 
             data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
             w_ndac_force1 = np.mean(data)
-            print("Measured N-DAC force 1: "+str(w_ndac_force1))
+            if verbose is True: print("Measured N-DAC force 1: "+str(w_ndac_force1))
             ###
             #fig, axs = plt.subplots(1,1,tight_layout=True)
             #axs.plot(data, marker='o')
@@ -513,25 +518,28 @@ class calibration:
 
             # Calculate intermediate weight
             w_ndac = (w_ndac_force1 - w_ndac_force0)*0.5
-            print("Measured N-DAC weight: "+str(w_ndac))
             weights_ndac[-cal_index] = w_ndac
-            print("N-DAC weights:")
-            print(["{0:0.3f}".format(i) for i in weights_ndac])
+            if verbose is True:
+                print("Measured N-DAC weight: "+str(w_ndac))
+                print("N-DAC weights:")
+                print(["{0:0.3f}".format(i) for i in weights_ndac])
             
             # Update composite weights
             weights = np.mean([weights_pdac, weights_ndac], axis=0)
-            print("Composite weight:")
-            print(["{0:0.3f}".format(i) for i in weights])
+            if verbose is True:
+                print("Composite weight:")
+                print(["{0:0.3f}".format(i) for i in weights])
             
             
 
         # Update class attribute
         self.weights = weights
-        print("==== WEIGHT CALIBRATION ====")
-        print("FINAL Composite weight:")
-        print("["+', '.join([f'{item:.8f}' for item in self.weights])+"]")
-        print("==== ====")
-        plt.show()
+        if verbose is True:
+            print("==== WEIGHT CALIBRATION ====")
+            print("FINAL Composite weight:")
+            print("["+', '.join([f'{item:.8f}' for item in self.weights])+"]")
+            print("==== ====")
+        #plt.show()
 
         
 

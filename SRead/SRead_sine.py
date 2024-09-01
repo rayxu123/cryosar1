@@ -57,8 +57,8 @@ if __name__ == "__main__":
     
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "01110100"
-    cal.weights = [0.00000000, 1927.12562946, 1103.68081661, 633.68289230, 361.96534710, 207.08216477, 119.99947794, 70.22991816, 39.93223623, 23.95819092, 13.61462402, 7.76640320, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01110101"
+    cal.weights = [0.00000000, 1839.12571365, 1053.70232441, 604.55429858, 345.51790394, 197.85192793, 114.59739447, 67.34823900, 38.18193952, 22.94386292, 13.26222229, 7.55838013, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Take data
-    time.sleep(3) 
+    #time.sleep(3) 
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
     if valid is False: print("WARNING: non-valid sample encountered!")
     # Plot time domain

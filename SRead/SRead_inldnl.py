@@ -47,15 +47,19 @@ if __name__ == "__main__":
     input("")
     cal.calibrate_ODAC_using_weights_v2()
     cal.calibrate_weights()
+    print("Calibrated ODAC: \""+str(cal.odac)+"\"")
+    print("Calibrated weight:")
+    print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
+    
     
     # Uncomment here to apply pre-defined calibration values
     '''
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "10000101"
-    cal.weights = [0.00000000, 2015.18280995, 1154.39856270, 662.66275483, 378.32254476, 216.67832853, 125.36733881, 73.58890683, 41.83486600, 25.03399658, 14.34997559, 8.20101929, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01110101"
+    cal.weights = [0.00000000, 1839.12571365, 1053.70232441, 604.55429858, 345.51790394, 197.85192793, 114.59739447, 67.34823900, 38.18193952, 22.94386292, 13.26222229, 7.55838013, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
 
 
@@ -94,11 +98,12 @@ if __name__ == "__main__":
 
     ## Take data ##
     # Specify number of batches.  Number of data points = 32768 * nMult
-    nMult = 16
-    RedundancyFactor = 2.0    # Combine this many LSB's together.  This divides the effective code space.
+    nMult = 32
+    RedundancyFactor = 1.0    # Combine this many LSB's together.  This divides the effective code space.
     # Apply data taking configuration + ODAC calibration
     try:
-        subprocess.run(["./../SControl/SControl.py", 
+        subprocess.run([sys.executable,
+            "./../SControl/SControl.py", 
             "-b",
             "-o", "ODAC_CODE,"+cal.odac,
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
