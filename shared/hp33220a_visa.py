@@ -50,6 +50,11 @@ class hp33220a_visa():
     # Query ID
     def IDN(self):
         return self.inst.query("*IDN?")
+        
+    # Query amplitude
+    def getAmp(self):
+        return float(self.inst.query("VOLT?"))
+        
 
 
 
@@ -59,6 +64,7 @@ class hp33220a_visa():
 if __name__ == "__main__":
     instr = hp33220a_visa('USB0::0x0957::0x0407::MY44012694::INSTR')
     print(instr.IDN())
+    print(instr.getAmp())
     #instr.initSine(2.000778198e6, 2.25)
     #instr.setOutput(False)
     #time.sleep(1)

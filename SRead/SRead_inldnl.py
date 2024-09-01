@@ -113,7 +113,7 @@ if __name__ == "__main__":
     cal.weights = np.array(cal.weights)/RedundancyFactor
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=nMult)
     #data = np.array(data)/RedundancyFactor
-    data = np.round(data)
+    #data = np.round(data)
     # Plot time domain
     #fig, axs = plt.subplots(1,1,tight_layout=True)
     #axs.plot(data, marker='o')

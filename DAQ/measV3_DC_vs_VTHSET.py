@@ -3,7 +3,7 @@
 '''
 Ray Xu
 Sept 2024
-cryosar1/DC/measV3_VTHVB.py
+cryosar1/DC/measV3_DC_vs_VTHSET.py
 
 Sweeps across VTHSET values and measures from motherboard AD7888
 
