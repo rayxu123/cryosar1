@@ -177,8 +177,8 @@ if __name__ == "__main__":
         
         ## Take calibrated data for measurement at -1dBFS 
         # Round down to the nearest 0.01Vpp
-        #AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)-0.005
-        AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)
+        AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)-0.005
+        #AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)    # This will give crap INL results
         awg.initSine(awgFreq, AWG_n1dBM)
         try:
             subprocess.run([sys.executable, 
