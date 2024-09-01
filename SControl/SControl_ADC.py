@@ -30,18 +30,19 @@ class SControl_ADC:
         adcVal = []
         for i in range(8):
             # Do a dummy read 
-            adcRead = self.spi.readAD7188(self.spi.adc1, i)
+            self.spi.readAD7188(self.spi.adc1, i)
             # Read 
             adcRead = self.spi.readAD7188(self.spi.adc1, i)
             adcVal.append(adcRead)
-        adc1 = {    'ADC_TESTPOINT' : adcVal[0],
-                    'ADC_VBN_TX' : adcVal[1],
-                    'VBP_SET' : adcVal[2],
-                    'VBN_SET' : adcVal[3],
-                    '3.3VDUT_SENSE_P' : adcVal[4],
-                    '3.3VDUT_SENSE_N' : adcVal[5],
-                    '1.2VDUT_SENSE_P' : adcVal[6],
-                    '1.2VDUT_SENSE_N' : adcVal[7]
+            
+        adc1 = {'ADC_TESTPOINT' : adcVal[0],
+                'ADC_VBN_TX' : adcVal[1],
+                'VBP_SET' : adcVal[2],
+                'VBN_SET' : adcVal[3],
+                '3.3VDUT_SENSE_P' : adcVal[4],
+                '3.3VDUT_SENSE_N' : adcVal[5],
+                '1.2VDUT_SENSE_P' : adcVal[6],
+                '1.2VDUT_SENSE_N' : adcVal[7]
                 }
         if self.args.quiet is False: print(adc1)
         
@@ -50,18 +51,19 @@ class SControl_ADC:
         adcVal = []
         for i in range(8):
             # Do a dummy read 
-            adcRead = self.spi.readAD7188(self.spi.adc2, i)
+            self.spi.readAD7188(self.spi.adc2, i)
             # Read 
             adcRead = self.spi.readAD7188(self.spi.adc2, i)
             adcVal.append(adcRead)
-        adc2 = {    'ADC_VBP_SW' : adcVal[0],
-                    'ADC_VBP_REF' : adcVal[1],
-                    'ADC_VBP_CMP' : adcVal[2],
-                    'ADC_VBP_TX' : adcVal[3],
-                    'AVDD_REF_P_SENSE' : adcVal[4],
-                    'AVDD_CMP_SENSE' : adcVal[5],
-                    'AVDD_REF_CN_SENSE' : adcVal[6],
-                    'AVDD_SAMP_SENSE' : adcVal[7]
+            
+        adc2 = {'ADC_VBP_SW' : adcVal[0],
+                'ADC_VBP_REF' : adcVal[1],
+                'ADC_VBP_CMP' : adcVal[2],
+                'ADC_VBP_TX' : adcVal[3],
+                'AVDD_REF_P_SENSE' : adcVal[4],
+                'AVDD_CMP_SENSE' : adcVal[5],
+                'AVDD_REF_CN_SENSE' : adcVal[6],
+                'AVDD_SAMP_SENSE' : adcVal[7]
                 }
         if self.args.quiet is False: print(adc2)
         
@@ -74,14 +76,15 @@ class SControl_ADC:
             # Read 
             adcRead = self.spi.readAD7188(self.spi.adc3, i)
             adcVal.append(adcRead)
-        adc3 = {    'ADC_VBN_CMP' : adcVal[0],
-                    'ADC_VBN_REF' : adcVal[1],
-                    'ADC_VBN_SW' : adcVal[2],
-                    'ADC_VBN_SAMP' : adcVal[3],
-                    'DVDD_TX_SENSE' : adcVal[4],
-                    'DVDD_CLK_SENSE' : adcVal[5],
-                    'DVDD_SAR_SENSE' : adcVal[6],
-                    '1.2VDD' : adcVal[7]
+            
+        adc3 = {'ADC_VBN_CMP' : adcVal[0],
+                'ADC_VBN_REF' : adcVal[1],
+                'ADC_VBN_SW' : adcVal[2],
+                'ADC_VBN_SAMP' : adcVal[3],
+                'DVDD_TX_SENSE' : adcVal[4],
+                'DVDD_CLK_SENSE' : adcVal[5],
+                'DVDD_SAR_SENSE' : adcVal[6],
+                '1.2VDD' : adcVal[7]
                 }
         if self.args.quiet is False: print(adc3)
         
