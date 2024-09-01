@@ -365,6 +365,8 @@ if __name__ == "__main__":
                     }
         dataDict = {**dataDict, **ad7888_data}
         pw.appendData(dataDict)
+        # Do not open plots, release memory
+        plt.close('all')
 
     print("\n")
     pw.writeCSV()
