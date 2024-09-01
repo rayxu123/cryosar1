@@ -177,7 +177,8 @@ if __name__ == "__main__":
         
         ## Take calibrated data for measurement at -1dBFS 
         # Round down to the nearest 0.01Vpp
-        AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)-0.005
+        #AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)-0.005
+        AWG_n1dBM = (np.floor(awg_FS*n1dB*100)/100)
         awg.initSine(awgFreq, AWG_n1dBM)
         try:
             subprocess.run([sys.executable, 
@@ -217,8 +218,8 @@ if __name__ == "__main__":
                 print("Code coverage [%]: "+str(100*len(np.unique(data))/np.ptp(data)))
                 print("Calibrated stddev [LSB]: "+str(np.std(data)))
                 print("Calibrated range [LSB]: "+str(np.ptp(data)))
-                print("Calibrated FS (-1dBFS) [LSB]: "+str(np.sum(cal.weights))+" ("+str(0.9*np.sum(cal.weights))+")")
-            if (np.ptp(data) > (np.sum(cal.weights)*0.9)):
+                print("Calibrated FS (-1dBFS) [LSB]: "+str(cal_fs_LSB)+" ("+str(n1dB*cal_fs_LSB)+")")
+            if (np.ptp(data) > (n1dB*cal_fs_LSB)):
                 print("WARNING: Exceeding 90% of FS")
             np.savetxt(rawdata_vth+"/data_cal_inldnl.txt.gz", data)
             # Calculate DNL then INL
