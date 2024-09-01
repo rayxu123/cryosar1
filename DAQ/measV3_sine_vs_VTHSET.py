@@ -134,7 +134,7 @@ if __name__ == "__main__":
             sys.exit(e)
 
         ## Let signals settle
-        time.sleep(0.1)
+        time.sleep(0.3)
 
         ## Calibrate 
         
