@@ -255,6 +255,7 @@ if __name__ == "__main__":
             plt.savefig(rawdata_vth+"/inldnl.png", dpi=900, pad_inches=0)
             np.savetxt(rawdata_vth+"/dnl.txt", dnl)
             np.savetxt(rawdata_vth+"/inl.txt", inl)
+            np.savetxt(rawdata_vth+"/binedges.txt", bin_edges)
             # Get quick statistics
             DNL_min = np.amin(dnl)
             DNL_max = np.amax(dnl)
