@@ -257,6 +257,8 @@ if __name__ == "__main__":
             DNL_max = np.amax(dnl)
             INL_min = np.amin(inl)
             INL_max = np.amax(inl)
+            print("DNL min/max: {:f}/{:f}".format(DNL_min, DNL_max))
+            print("INL min/max: {:f}/{:f}".format(INL_min, INL_max))
         else:
             DNL_min = 0
             DNL_max = 0
