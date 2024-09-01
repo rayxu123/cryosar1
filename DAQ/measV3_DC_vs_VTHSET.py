@@ -28,7 +28,7 @@ if __name__ == "__main__":
     
     # Input arguments
     parser = argparse.ArgumentParser(description='Sweeps across VTHSET values and measures biases.')
-    parser.add_argument('-t', dest='setTemp', action='store', default=25, help="Set temperature, in celsius.  For metadata only.")
+    parser.add_argument('-t', dest='setTemp', action='store', default=300, help="Set temperature, in kelvin.  For metadata only.")
     parser.add_argument('-s', dest='sweep', action='store', default="4,4,512", help="VTHSET sweep in start,step,stop inclusive.  Units in DAC setting out of 1024 (1.2V).")
     parser.add_argument('-d', dest='debug', action='store_true', default=False, help="Verbose output/debug output.")
     args = parser.parse_args()
