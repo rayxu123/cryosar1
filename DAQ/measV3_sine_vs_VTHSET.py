@@ -76,8 +76,10 @@ if __name__ == "__main__":
     stepDAC = int(args.sweep.split(",")[1])
     stopDAC = int(args.sweep.split(",")[2])
     sweepList = np.arange(startDAC, stopDAC+stepDAC, stepDAC)
+    if 512 not in sweepList: 
+        sweepList = np.insert(sweepList, 0, 512)   # Manually add VTHSET=0.6V to imitate no adaptive feedback
+    sweepList = np.sort(sweepList)
     sweepList = np.flip(sweepList)  # Start with highest VTH setting (VBN and VBP most near rails)
-    if 512 not in sweepList: np.append(sweepList, 512)   # Manually add VTHSET=0.6V to imitate no adaptive feedback
     # Create data directory
     rawdata_dir = "./output/"+os.path.splitext(os.path.basename(pw.csvFilepath()))[0]+"_rawdata"
     os.makedirs(rawdata_dir)
