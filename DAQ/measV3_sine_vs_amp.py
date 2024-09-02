@@ -151,6 +151,7 @@ if __name__ == "__main__":
     # Sort descending
     awg_list.sort()
     awg_list = np.flip(awg_list)
+    awg_list = np.unique(awg_list)
     
     ## Take pedestal, uncalibrated 
     awg.setOutput(False)
