@@ -393,7 +393,7 @@ class calibration:
         mean_list.append(np.mean([force0, force1]))
         odac_list.append(odac_value)
         
-        '''
+        
         # Pick the most optimal ODAC value 
         # Check for any over/under flow in force results 
         force0_overflow = np.array(np.abs(np.array(force0_list)) == np.sum(self.CAL_WEIGHTS_SEED, axis=None))
@@ -410,6 +410,7 @@ class calibration:
         # Pick the last ODAC iteration 
         idx = len(odac_list)-1
         odac_optimal = odac_list[idx]
+        '''
         
         # Update class attribute
         self.odac = BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin

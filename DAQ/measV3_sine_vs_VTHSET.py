@@ -10,6 +10,9 @@ Sweeps across VTHSET values and measures sine wave performance
 Make sure DIP switches are set to FDBK, DAC setting!
 
 Have CryoCon running in the background to poll every second!
+
+TODO: Implement logging to save calibration steps 
+TODO: Save datar2 as part of raw data 
 '''
 
 import time, sys, subprocess, os
