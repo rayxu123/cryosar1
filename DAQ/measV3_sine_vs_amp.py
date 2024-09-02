@@ -267,7 +267,7 @@ if __name__ == "__main__":
         awg.initSine(awgFreq, awgAmp)
         awg.setOutput(True)
         # Let signals settle
-        time.sleep(1.0)
+        time.sleep(0.3)
         
         
         
