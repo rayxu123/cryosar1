@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', dest='debug', action='store_true', default=False, help="Verbose output/debug output.")
     parser.add_argument('--npri', dest='AWGnpri', action='store', default='1823', type=float, help="AWG prime number of cycles to set frequency.  Freq=(npri/32768)*sampling rate.")
     parser.add_argument('--amp', dest='AWGamp_initial', action='store', default='1.79', help="AWG amplitude in Vpp that is approximately -1dBFS.  The actual amplitude is fine tuned automatically.")
-    parser.add_argument('--numpts', dest='numpts', action='store', default=128, type=int, help="Number of linearly space amplitude points.  (Defualt: 256)")
+    parser.add_argument('--numpts', dest='numpts', action='store', default=64, type=int, help="Number of linearly space amplitude points.  (Defualt: 256)")
     parser.add_argument('-i', dest='enableINLDNL', action='store_true', default=False, help="Enable INL/DNL data taking.  Really only useful for 1MHz.  Default=False")
     parser.add_argument('--imult', dest='imult', action='store', default=32, type=int, help="Number of 32k sample multiples for INL/DNL.  Default: 32")
     args = parser.parse_args()
@@ -148,8 +148,9 @@ if __name__ == "__main__":
     awg_list = np.append(awg_list, awg_fs_VPP*n6dB)
     # Round to nearest 1 mV
     awg_list = np.round(awg_list*1000)/1000
-    # Sort ascending
+    # Sort descending
     awg_list.sort()
+    awg_list = np.flip(awg_list)
     
     ## Take pedestal, uncalibrated 
     awg.setOutput(False)
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     ## INL DNL data, if enabled (MUST do immediately after taking calibrated data to preserve DUT configuration)
     if args.enableINLDNL is True:
         print("Taking INL DNL")
-        awg.initSine(awgFreq, (np.floor(awg_fs_VPP*n1dB*100)/100)-0.01)    # Round to lowest 10mV and minus 5mV
+        awg.initSine(awgFreq, (np.floor(awg_fs_VPP*n1dB*100)/100)-0.005)    # Round to lowest 10mV and minus 5mV
         awg.setOutput(True)
         time.sleep(0.3)
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=args.imult)
