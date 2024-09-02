@@ -220,103 +220,107 @@ class calibration:
         mean_list = []
         force0_list = []
         force1_list = []
-        for i in range(self.CAL_ODAC_ITER+redundancy):
-            # Set ODAC code, force 0
-            if bsel is False:
-                self.__config([
-                    "CAL_EN,1",
-                    "B_SEL,0",
-                    "CAL_DIR_P,0",
-                    "CAL_DIR_N,0",
-                    "CAL_FORCE_P,"+cal_force,
-                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "SLICE_EN_P,"+cal_sliceen,
-                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
-                ])
-            else:
-                self.__config([
-                    "CAL_EN,1",
-                    "B_SEL,1",
-                    "CAL_DIR_P,0",
-                    "CAL_DIR_N,0",
-                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "CAL_FORCE_N,"+cal_force,
-                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "SLICE_EN_N,"+cal_sliceen,
-                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
-                ])
-            # Take data
-            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
-            force0 = np.mean(data)
-            force0_list.append(force0)
-            # Set ODAC code, force 1
-            if bsel is False:
-                self.__config([
-                    "CAL_EN,1",
-                    "B_SEL,0",
-                    "CAL_DIR_P,1",
-                    "CAL_DIR_N,1",
-                    "CAL_FORCE_P,"+cal_force,
-                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "SLICE_EN_P,"+cal_sliceen,
-                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
-                ])
-            else:
-                self.__config([
-                    "CAL_EN,1",
-                    "B_SEL,1",
-                    "CAL_DIR_P,1",
-                    "CAL_DIR_N,1",
-                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "CAL_FORCE_N,"+cal_force,
-                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                    "SLICE_EN_N,"+cal_sliceen,
-                    "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
-                ])
-            # Take data
-            data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
-            force1 = np.mean(data)
-            force1_list.append(force1)
-            # Debug printing
-            if verbose is True:
-                print("== ITERATION "+str(i)+" ==")
-                print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
-                print("Current ODAC uint8: "+str(odac_value))
-                print("Force 0: "+str(force0))
-                print("Force 1: "+str(force1))
-                print("Current Mean: "+str(np.mean([force0, force1])))
-            
-            # Keep record 
-            mean_list.append(np.mean([force0, force1]))
-            odac_list.append(odac_value)
-            
-            '''
-            # Check if calibration already converged (if so then quit)
-            if np.abs(np.mean([force0, force1])) <= self.CAL_ODAC_CONV:
-                print("ODAC Calibration converged.")
-                break
-            '''
-            '''
-            # Check if calibration already converged by seeing if neither force0 nor force1 overflowed
-            if (np.abs(force0) != 11) and (np.abs(force1) != 11):
-                print("ODAC Calibration converged.")
-                break
-            '''    
-            # Apply ODAC correction 
-            if bsel is False:
-                if (np.mean([force0, force1]) > 0):
-                    odac_value = odac_value - odac_weight
+        try:
+            for i in range(self.CAL_ODAC_ITER+redundancy):
+                # Set ODAC code, force 0
+                if bsel is False:
+                    self.__config([
+                        "CAL_EN,1",
+                        "B_SEL,0",
+                        "CAL_DIR_P,0",
+                        "CAL_DIR_N,0",
+                        "CAL_FORCE_P,"+cal_force,
+                        "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "SLICE_EN_P,"+cal_sliceen,
+                        "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                    ])
                 else:
-                    odac_value = odac_value + odac_weight
-            else:
-                if (np.mean([force0, force1]) > 0):
-                    odac_value = odac_value + odac_weight
+                    self.__config([
+                        "CAL_EN,1",
+                        "B_SEL,1",
+                        "CAL_DIR_P,0",
+                        "CAL_DIR_N,0",
+                        "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "CAL_FORCE_N,"+cal_force,
+                        "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "SLICE_EN_N,"+cal_sliceen,
+                        "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                    ])
+                # Take data
+                data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+                force0 = np.mean(data)
+                force0_list.append(force0)
+                # Set ODAC code, force 1
+                if bsel is False:
+                    self.__config([
+                        "CAL_EN,1",
+                        "B_SEL,0",
+                        "CAL_DIR_P,1",
+                        "CAL_DIR_N,1",
+                        "CAL_FORCE_P,"+cal_force,
+                        "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "SLICE_EN_P,"+cal_sliceen,
+                        "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                    ])
                 else:
-                    odac_value = odac_value - odac_weight
-            # Set up next iteration
-            odac_weight = np.ceil(odac_weight/2)
+                    self.__config([
+                        "CAL_EN,1",
+                        "B_SEL,1",
+                        "CAL_DIR_P,1",
+                        "CAL_DIR_N,1",
+                        "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "CAL_FORCE_N,"+cal_force,
+                        "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                        "SLICE_EN_N,"+cal_sliceen,
+                        "ODAC_CODE,"+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin
+                    ])
+                # Take data
+                data,valid,nc = self.fpga.takeData("data", weighting=self.CAL_WEIGHTS_SEED, bipolar=True, printBinary=False, mult=self.CAL_ODAC_MULT)
+                force1 = np.mean(data)
+                force1_list.append(force1)
+                # Debug printing
+                if verbose is True:
+                    print("== ITERATION "+str(i)+" ==")
+                    print("Current ODAC binary: "+BitArray(uint=int(odac_value), length=self.CAL_ODAC_BITWIDTH).bin)
+                    print("Current ODAC uint8: "+str(odac_value))
+                    print("Force 0: "+str(force0))
+                    print("Force 1: "+str(force1))
+                    print("Current Mean: "+str(np.mean([force0, force1])))
+                
+                # Keep record 
+                mean_list.append(np.mean([force0, force1]))
+                odac_list.append(odac_value)
+                
+                '''
+                # Check if calibration already converged (if so then quit)
+                if np.abs(np.mean([force0, force1])) <= self.CAL_ODAC_CONV:
+                    print("ODAC Calibration converged.")
+                    break
+                '''
+                '''
+                # Check if calibration already converged by seeing if neither force0 nor force1 overflowed
+                if (np.abs(force0) != 11) and (np.abs(force1) != 11):
+                    print("ODAC Calibration converged.")
+                    break
+                '''    
+                # Apply ODAC correction 
+                if bsel is False:
+                    if (np.mean([force0, force1]) > 0):
+                        odac_value = odac_value - odac_weight
+                    else:
+                        odac_value = odac_value + odac_weight
+                else:
+                    if (np.mean([force0, force1]) > 0):
+                        odac_value = odac_value + odac_weight
+                    else:
+                        odac_value = odac_value - odac_weight
+                # Set up next iteration
+                odac_weight = np.ceil(odac_weight/2)
+        except KeyboardInterrupt:
+            print("Quitting gracefully.")
+            exit()
             
                 
         
@@ -389,8 +393,22 @@ class calibration:
         mean_list.append(np.mean([force0, force1]))
         odac_list.append(odac_value)
         
+        '''
         # Pick the most optimal ODAC value 
-        idx = np.argmin(np.abs(mean_list))
+        # Check for any over/under flow in force results 
+        force0_overflow = np.array(np.abs(np.array(force0_list)) == np.sum(self.CAL_WEIGHTS_SEED, axis=None))
+        force1_overflow = np.array(np.abs(np.array(force1_list)) == np.sum(self.CAL_WEIGHTS_SEED, axis=None))
+        mean_list_normal = np.array(mean_list)[~force0_overflow & ~force1_overflow]
+        odac_list_normal = np.array(odac_list)[~force0_overflow & ~force1_overflow]
+        try:
+            idx = np.argmin(np.abs(mean_list_normal))
+            odac_optimal = odac_list_normal[idx]
+        except:
+            odac_optimal = 128
+            idx = 1
+        '''
+        # Pick the last ODAC iteration 
+        idx = len(odac_list)-1
         odac_optimal = odac_list[idx]
         
         # Update class attribute
@@ -410,125 +428,129 @@ class calibration:
         weights_pdac = self.CAL_WEIGHTS_SEED.copy()     # Perform deep copy!
         weights_ndac = self.CAL_WEIGHTS_SEED.copy()     # Perform deep copy!
         weights = self.CAL_WEIGHTS_SEED.copy()          # Perform deep copy!
-        for cal_index in range(self.CAL_WEIGHTS_START, self.CAL_WEIGHTS_END+1):
-            cal_force = BitArray(uint=int(pow(2,cal_index-1)), length=self.CAL_WEIGHTS_WIDTH).bin
-            cal_sliceen = BitArray(uint=int(pow(2,cal_index)-1), length=self.CAL_WEIGHTS_WIDTH).bin
-            
-            if verbose is True:
-                print("== BIT "+str(cal_index)+" ==")
-                print("cal force vector: "+cal_force)
-                print("slice enable vector: "+cal_sliceen)
-            
-            # Set P-DAC (bsel=0), direction 0 (cal_force=0)
-            self.__config([
-                "CAL_EN,1",
-                "B_SEL,0",
-                "CAL_DIR_P,0",
-                "CAL_DIR_N,0",
-                "CAL_FORCE_P,"+cal_force,
-                "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "SLICE_EN_P,"+cal_sliceen,
-                "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "ODAC_CODE,"+self.odac
-            ])
-            # Take data, get mean 
-            data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
-            w_pdac_force0 = np.mean(data)
-            if verbose is True: print("Measured P-DAC force 0: "+str(w_pdac_force0))
-            ###
-            #fig, axs = plt.subplots(1,1,tight_layout=True)
-            #axs.plot(data, marker='o')
-            #axs.title.set_text("P-DAC (bsel=0), direction 0 (cal_force=0)")
-            ###
+        try:
+            for cal_index in range(self.CAL_WEIGHTS_START, self.CAL_WEIGHTS_END+1):
+                cal_force = BitArray(uint=int(pow(2,cal_index-1)), length=self.CAL_WEIGHTS_WIDTH).bin
+                cal_sliceen = BitArray(uint=int(pow(2,cal_index)-1), length=self.CAL_WEIGHTS_WIDTH).bin
+                
+                if verbose is True:
+                    print("== BIT "+str(cal_index)+" ==")
+                    print("cal force vector: "+cal_force)
+                    print("slice enable vector: "+cal_sliceen)
+                
+                # Set P-DAC (bsel=0), direction 0 (cal_force=0)
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,0",
+                    "CAL_DIR_P,0",
+                    "CAL_DIR_N,0",
+                    "CAL_FORCE_P,"+cal_force,
+                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_P,"+cal_sliceen,
+                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "ODAC_CODE,"+self.odac
+                ])
+                # Take data, get mean 
+                data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
+                w_pdac_force0 = np.mean(data)
+                if verbose is True: print("Measured P-DAC force 0: "+str(w_pdac_force0))
+                ###
+                #fig, axs = plt.subplots(1,1,tight_layout=True)
+                #axs.plot(data, marker='o')
+                #axs.title.set_text("P-DAC (bsel=0), direction 0 (cal_force=0)")
+                ###
 
-            # Set P-DAC (bsel=0), direction 1 (cal_force=1)
-            self.__config([
-                "CAL_EN,1",
-                "B_SEL,0",
-                "CAL_DIR_P,1",
-                "CAL_DIR_N,1",
-                "CAL_FORCE_P,"+cal_force,
-                "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "SLICE_EN_P,"+cal_sliceen,
-                "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "ODAC_CODE,"+self.odac
-            ])
-            # Take data, get mean 
-            data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
-            w_pdac_force1 = np.mean(data)
-            if verbose is True: print("Measured P-DAC force 1: "+str(w_pdac_force1))
-            ###
-            #fig, axs = plt.subplots(1,1,tight_layout=True)
-            #axs.plot(data, marker='o')
-            #axs.title.set_text("P-DAC (bsel=0), direction 1 (cal_force=1)")
-            ###
+                # Set P-DAC (bsel=0), direction 1 (cal_force=1)
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,0",
+                    "CAL_DIR_P,1",
+                    "CAL_DIR_N,1",
+                    "CAL_FORCE_P,"+cal_force,
+                    "CAL_FORCE_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_P,"+cal_sliceen,
+                    "SLICE_EN_N,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "ODAC_CODE,"+self.odac
+                ])
+                # Take data, get mean 
+                data,valid,nc = self.fpga.takeData("data", weighting=weights_pdac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
+                w_pdac_force1 = np.mean(data)
+                if verbose is True: print("Measured P-DAC force 1: "+str(w_pdac_force1))
+                ###
+                #fig, axs = plt.subplots(1,1,tight_layout=True)
+                #axs.plot(data, marker='o')
+                #axs.title.set_text("P-DAC (bsel=0), direction 1 (cal_force=1)")
+                ###
 
-            # Calculate intermediate weight
-            w_pdac = (w_pdac_force1 - w_pdac_force0)*0.5
-            weights_pdac[-cal_index] = w_pdac
-            if verbose is True:
-                print("Measured P-DAC weight: "+str(w_pdac))
-                print("P-DAC weights:")
-                print(["{0:0.3f}".format(i) for i in weights_pdac])
-            
-            
-            # Set N-DAC (bsel=1), direction 0 (cal_force=0)
-            self.__config([
-                "CAL_EN,1",
-                "B_SEL,1",
-                "CAL_DIR_P,0",
-                "CAL_DIR_N,0",
-                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "CAL_FORCE_N,"+cal_force,
-                "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "SLICE_EN_N,"+cal_sliceen,
-                "ODAC_CODE,"+self.odac
-            ])
-            # Take data, get mean 
-            data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
-            w_ndac_force0 = np.mean(data)
-            if verbose is True: print("Measured N-DAC force 0: "+str(w_ndac_force0))
-            ###
-            #fig, axs = plt.subplots(1,1,tight_layout=True)
-            #axs.plot(data, marker='o')
-            #axs.title.set_text("N-DAC (bsel=1), direction 0 (cal_force=0)") 
-            ###
+                # Calculate intermediate weight
+                w_pdac = (w_pdac_force1 - w_pdac_force0)*0.5
+                weights_pdac[-cal_index] = w_pdac
+                if verbose is True:
+                    print("Measured P-DAC weight: "+str(w_pdac))
+                    print("P-DAC weights:")
+                    print(["{0:0.3f}".format(i) for i in weights_pdac])
+                
+                
+                # Set N-DAC (bsel=1), direction 0 (cal_force=0)
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,1",
+                    "CAL_DIR_P,0",
+                    "CAL_DIR_N,0",
+                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "CAL_FORCE_N,"+cal_force,
+                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_N,"+cal_sliceen,
+                    "ODAC_CODE,"+self.odac
+                ])
+                # Take data, get mean 
+                data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
+                w_ndac_force0 = np.mean(data)
+                if verbose is True: print("Measured N-DAC force 0: "+str(w_ndac_force0))
+                ###
+                #fig, axs = plt.subplots(1,1,tight_layout=True)
+                #axs.plot(data, marker='o')
+                #axs.title.set_text("N-DAC (bsel=1), direction 0 (cal_force=0)") 
+                ###
 
-            # Set N-DAC (bsel=1), direction 1 (cal_force=1)
-            self.__config([
-                "CAL_EN,1",
-                "B_SEL,1",
-                "CAL_DIR_P,1",
-                "CAL_DIR_N,1",
-                "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "CAL_FORCE_N,"+cal_force,
-                "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
-                "SLICE_EN_N,"+cal_sliceen,
-                "ODAC_CODE,"+self.odac
-            ])
-            # Take data, get mean 
-            data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
-            w_ndac_force1 = np.mean(data)
-            if verbose is True: print("Measured N-DAC force 1: "+str(w_ndac_force1))
-            ###
-            #fig, axs = plt.subplots(1,1,tight_layout=True)
-            #axs.plot(data, marker='o')
-            #axs.title.set_text("N-DAC (bsel=1), direction 1 (cal_force=1)")
-            ###
+                # Set N-DAC (bsel=1), direction 1 (cal_force=1)
+                self.__config([
+                    "CAL_EN,1",
+                    "B_SEL,1",
+                    "CAL_DIR_P,1",
+                    "CAL_DIR_N,1",
+                    "CAL_FORCE_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "CAL_FORCE_N,"+cal_force,
+                    "SLICE_EN_P,"+self.CAL_WEIGHTS_SLICEEN_NONE,
+                    "SLICE_EN_N,"+cal_sliceen,
+                    "ODAC_CODE,"+self.odac
+                ])
+                # Take data, get mean 
+                data,valid,nc = self.fpga.takeData("data", weighting=weights_ndac, bipolar=True, printBinary=False, mult=self.CAL_WEIGHTS_MULT)
+                w_ndac_force1 = np.mean(data)
+                if verbose is True: print("Measured N-DAC force 1: "+str(w_ndac_force1))
+                ###
+                #fig, axs = plt.subplots(1,1,tight_layout=True)
+                #axs.plot(data, marker='o')
+                #axs.title.set_text("N-DAC (bsel=1), direction 1 (cal_force=1)")
+                ###
 
-            # Calculate intermediate weight
-            w_ndac = (w_ndac_force1 - w_ndac_force0)*0.5
-            weights_ndac[-cal_index] = w_ndac
-            if verbose is True:
-                print("Measured N-DAC weight: "+str(w_ndac))
-                print("N-DAC weights:")
-                print(["{0:0.3f}".format(i) for i in weights_ndac])
-            
-            # Update composite weights
-            weights = np.mean([weights_pdac, weights_ndac], axis=0)
-            if verbose is True:
-                print("Composite weight:")
-                print(["{0:0.3f}".format(i) for i in weights])
+                # Calculate intermediate weight
+                w_ndac = (w_ndac_force1 - w_ndac_force0)*0.5
+                weights_ndac[-cal_index] = w_ndac
+                if verbose is True:
+                    print("Measured N-DAC weight: "+str(w_ndac))
+                    print("N-DAC weights:")
+                    print(["{0:0.3f}".format(i) for i in weights_ndac])
+                
+                # Update composite weights
+                weights = np.mean([weights_pdac, weights_ndac], axis=0)
+                if verbose is True:
+                    print("Composite weight:")
+                    print(["{0:0.3f}".format(i) for i in weights])
+        except KeyboardInterrupt:
+            print("Quitting gracefully.")
+            exit()
             
             
 
