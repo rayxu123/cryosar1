@@ -131,6 +131,7 @@ if __name__ == "__main__":
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
     except Exception as e:
         sys.exit(e)
+    time.sleep(0.5)
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
     if valid is False: print("WARNING: non-valid sample encountered!")
     sine_ptp = np.ptp(data)
@@ -166,6 +167,7 @@ if __name__ == "__main__":
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
     except Exception as e:
         sys.exit(e)
+    time.sleep(0.5)
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=4)
     if valid is False: print("WARNING: non-valid sample encountered!")
     # Save raw data
@@ -184,6 +186,7 @@ if __name__ == "__main__":
             "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
     except Exception as e:
         sys.exit(e)
+    time.sleep(0.5)
     data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=4)
     if valid is False: print("WARNING: non-valid sample encountered!")
     # Save raw data
@@ -281,6 +284,7 @@ if __name__ == "__main__":
                 "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
         except Exception as e:
             sys.exit(e)
+        time.sleep(0.5)
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
         if valid is False: print("WARNING: non-valid sample encountered!")
         datauncal_unique = len(np.unique(np.round(data)))
@@ -309,6 +313,7 @@ if __name__ == "__main__":
                 "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
         except Exception as e:
             sys.exit(e)
+        time.sleep(0.5)
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
         if valid is False: print("WARNING: non-valid sample encountered!")
         datacal_unique = len(np.unique(np.round(data)))
