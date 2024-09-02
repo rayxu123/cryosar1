@@ -104,7 +104,7 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Wait for signal to settle 
-    time.sleep(0.5)
+    time.sleep(0.8)
         
     ## Calibrate once to get the fullscale 
     sys.stdout = logger.logger(rawdata_dir+"./log.txt")
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     ## Take calibrated data to fine tune AWG amplitude 
     # Apply data taking configuration + ODAC calibration
     awg.setOutput(True)
-    time.sleep(0.5)
+    time.sleep(0.8)
     print("Take calibrated data to determine FS.")
     try:
         subprocess.run([sys.executable, 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     
     ## Take pedestal, uncalibrated 
     awg.setOutput(False)
-    time.sleep(0.5)
+    time.sleep(0.8)
     print("Take pedestal data, uncalibrated")
     try:
         subprocess.run([sys.executable, 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     
     ## Take pedestal, calibrated 
     awg.setOutput(False)
-    time.sleep(0.5)
+    time.sleep(0.8)
     print("Take pedestal data, calibrated")
     try:
         subprocess.run([sys.executable, 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         print("Taking INL DNL")
         awg.initSine(awgFreq, (np.floor(awg_fs_VPP*n1dB*100)/100)-0.005)    # Round to lowest 10mV and minus 5mV
         awg.setOutput(True)
-        time.sleep(0.5)
+        time.sleep(0.8)
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=args.imult)
         if True:
             print("Number of unique codes: "+str(len(np.unique(data))))
@@ -267,7 +267,7 @@ if __name__ == "__main__":
         awg.initSine(awgFreq, awgAmp)
         awg.setOutput(True)
         # Let signals settle
-        time.sleep(0.5)
+        time.sleep(0.8)
         
         ## Take calibrated data 
         print("Take calibrated data @ AWG amplitude sweep")
