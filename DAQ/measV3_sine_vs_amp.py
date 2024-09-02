@@ -104,7 +104,7 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Wait for signal to settle 
-    time.sleep(0.8)
+    time.sleep(1.0)
         
     ## Calibrate once to get the fullscale 
     sys.stdout = logger.logger(rawdata_dir+"./log.txt")
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     ## Take calibrated data to fine tune AWG amplitude 
     # Apply data taking configuration + ODAC calibration
     awg.setOutput(True)
-    time.sleep(0.8)
+    time.sleep(1.0)
     print("Take calibrated data to determine FS.")
     try:
         subprocess.run([sys.executable, 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     
     ## Take pedestal, uncalibrated 
     awg.setOutput(False)
-    time.sleep(0.8)
+    time.sleep(1.0)
     print("Take pedestal data, uncalibrated")
     try:
         subprocess.run([sys.executable, 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     
     ## Take pedestal, calibrated 
     awg.setOutput(False)
-    time.sleep(0.8)
+    time.sleep(1.0)
     print("Take pedestal data, calibrated")
     try:
         subprocess.run([sys.executable, 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         print("Taking INL DNL")
         awg.initSine(awgFreq, (np.floor(awg_fs_VPP*n1dB*100)/100)-0.005)    # Round to lowest 10mV and minus 5mV
         awg.setOutput(True)
-        time.sleep(0.8)
+        time.sleep(1.0)
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=args.imult)
         if True:
             print("Number of unique codes: "+str(len(np.unique(data))))
@@ -267,7 +267,37 @@ if __name__ == "__main__":
         awg.initSine(awgFreq, awgAmp)
         awg.setOutput(True)
         # Let signals settle
-        time.sleep(0.8)
+        time.sleep(1.0)
+        
+        
+        
+
+        ## Take UNcalibrated data for measurement at -1dBFS 
+        try:
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
+                "-b",
+                "-o", "ODAC_CODE,"+cal.CAL_ODAC_DEFAULT,
+                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+        except Exception as e:
+            sys.exit(e)
+        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
+        if valid is False: print("WARNING: non-valid sample encountered!")
+        datauncal_unique = len(np.unique(np.round(data)))
+        datauncal_range = np.ptp(data)
+        '''
+        if args.debug is True:
+            print("UnCalibrated Number of unique codes: "+str(datauncal_unique))
+            print("UnCalibrated stddev [LSB]: "+str(np.std(data)))
+            print("UnCalibrated range [LSB]: "+str(datauncal_range))
+            print("UnCalibrated FS (-1dBFS) [LSB]: "+str(cal_fs_LSB)+" ("+str(n1dB*cal_fs_LSB)+")")
+        if (datacal_range > (n1dB*cal_fs_LSB)):
+            print("WARNING: Exceeding 90% of FS")
+        '''
+        datauncal_ENOB, datauncal_SNDR, datauncal_SFDR, datauncal_SNR, datauncal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="UnCalibrated, 12b levels", numbins=3, numharm=11, save=rawdata_awgamp+"/data_uncal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        # Save raw data
+        np.savetxt(rawdata_awgamp+"/data_uncal.txt", data)
+        np.savetxt(rawdata_awgamp+"/data_uncal_r2.txt", datar2)
         
         ## Take calibrated data 
         print("Take calibrated data @ AWG amplitude sweep")
@@ -300,34 +330,6 @@ if __name__ == "__main__":
         # Save raw data
         np.savetxt(rawdata_awgamp+"/data_cal.txt", data)
         np.savetxt(rawdata_awgamp+"/data_cal_r2.txt", datar2)
-        
-
-        ## Take UNcalibrated data for measurement at -1dBFS 
-        try:
-            subprocess.run([sys.executable, 
-                "./../SControl/SControl.py", 
-                "-b",
-                "-o", "ODAC_CODE,"+cal.CAL_ODAC_DEFAULT,
-                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
-        except Exception as e:
-            sys.exit(e)
-        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.CAL_WEIGHTS_DEFAULT.copy(), mult=1)
-        if valid is False: print("WARNING: non-valid sample encountered!")
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
-        '''
-        if args.debug is True:
-            print("UnCalibrated Number of unique codes: "+str(datauncal_unique))
-            print("UnCalibrated stddev [LSB]: "+str(np.std(data)))
-            print("UnCalibrated range [LSB]: "+str(datauncal_range))
-            print("UnCalibrated FS (-1dBFS) [LSB]: "+str(cal_fs_LSB)+" ("+str(n1dB*cal_fs_LSB)+")")
-        if (datacal_range > (n1dB*cal_fs_LSB)):
-            print("WARNING: Exceeding 90% of FS")
-        '''
-        datauncal_ENOB, datauncal_SNDR, datauncal_SFDR, datauncal_SNR, datauncal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="UnCalibrated, 12b levels", numbins=3, numharm=11, save=rawdata_awgamp+"/data_uncal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
-        # Save raw data
-        np.savetxt(rawdata_awgamp+"/data_uncal.txt", data)
-        np.savetxt(rawdata_awgamp+"/data_uncal_r2.txt", datar2)
         
         # Read AD7888
         try:
