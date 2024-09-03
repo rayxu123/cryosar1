@@ -52,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument('--amp', dest='AWGamp_initial', action='store', default='1.79', help="AWG amplitude in Vpp that is approximately -1dBFS.  The actual amplitude is fine tuned automatically.")
     parser.add_argument('--numpts', dest='numpts', action='store', default=50, type=int, help="Number of linearly space amplitude points.  (Defualt: 256)")
     parser.add_argument('-i', dest='enableINLDNL', action='store_true', default=False, help="Enable INL/DNL data taking.  Really only useful for 1MHz.  Default=False")
-    parser.add_argument('--imult', dest='imult', action='store', default=32, type=int, help="Number of 32k sample multiples for INL/DNL.  Default: 32")
+    parser.add_argument('--imult', dest='imult', action='store', default=16, type=int, help="Number of 32k sample multiples for INL/DNL.  Default: 32")
     args = parser.parse_args()
     
     # Init readout 
