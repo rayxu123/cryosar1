@@ -400,12 +400,20 @@ class calibration:
         force1_overflow = np.array(np.abs(np.array(force1_list)) == np.sum(self.CAL_WEIGHTS_SEED, axis=None))
         mean_list_normal = np.array(mean_list)[~force0_overflow & ~force1_overflow]
         odac_list_normal = np.array(odac_list)[~force0_overflow & ~force1_overflow]
+        force0_list_normal = np.array(force0_list)[~force0_overflow & ~force1_overflow]
+        force1_list_normal = np.array(force1_list)[~force0_overflow & ~force1_overflow]
         try:
             idx = np.argmin(np.abs(mean_list_normal))
             odac_optimal = odac_list_normal[idx]
         except:
             odac_optimal = 128
             idx = 1
+        '''
+        print(force0_overflow)
+        print(force1_overflow)
+        print(mean_list)
+        print(odac_list)
+        '''
         '''
         # Pick the last ODAC iteration 
         idx = len(odac_list)-1
@@ -416,9 +424,9 @@ class calibration:
         self.odac = BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin
         if verbose is True:
             print("==== ODAC CALIBRATION (weights method v2)====")
-            print("Force 0: "+str(force0_list[idx]))
-            print("Force 1: "+str(force1_list[idx]))
-            print("Final Mean: "+str(mean_list[idx]))
+            print("Force 0: "+str(force0_list_normal[idx]))
+            print("Force 1: "+str(force1_list_normal[idx]))
+            print("Final Mean: "+str(mean_list_normal[idx]))
             print("Calibrated ODAC: \""+BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin+"\"")
             print("==== ====")
         
