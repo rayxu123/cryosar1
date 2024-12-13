@@ -119,9 +119,7 @@ class fpga:
                 result = self.pool.starmap(parse, zip(fifodata, repeat(weight), repeat(bipolar), repeat(printBinary)))
                 dataw, valid = zip(*result)
                 if not all(valid):
-                    # FIXME This is a work around to force the fpga to accept data in V3 setup because the data transmission is not zero balanced.
-                    #raise ValueError("Encountered at least one non-valid sample.  Quitting.")
-                    pass
+                    raise ValueError("Encountered at least one non-valid sample.  Quitting.")
                 dataw_list.extend(dataw)
                 valid_list.extend(valid)
                 datar2_list.extend(fifodata)
