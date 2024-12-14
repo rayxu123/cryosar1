@@ -49,6 +49,9 @@ class calibration:
         self.fpga = fpga
         # calibrated ODAC value, bit string
         self.odac = None
+        self.odac_mean = 0
+        self.odac_force0 = 0
+        self.odac_force1 = 0
         # TODO: remove hard code
         #self.odac = "10100001"
         #self.odac = "10000000"
@@ -422,6 +425,9 @@ class calibration:
         
         # Update class attribute
         self.odac = BitArray(uint=int(odac_optimal), length=self.CAL_ODAC_BITWIDTH).bin
+        self.odac_mean = mean_list_normal[idx]
+        self.odac_force0 = force0_list_normal[idx]
+        self.odac_force1 = force1_list_normal[idx]
         if verbose is True:
             print("==== ODAC CALIBRATION (weights method v2)====")
             print("Force 0: "+str(force0_list_normal[idx]))
