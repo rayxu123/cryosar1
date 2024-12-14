@@ -409,8 +409,13 @@ class calibration:
             idx = np.argmin(np.abs(mean_list_normal))
             odac_optimal = odac_list_normal[idx]
         except:
-            odac_optimal = 128
-            idx = 1
+            # If every step had under/over flow, return the full list and point it to the last step
+            mean_list_normal = np.array(mean_list)
+            odac_list_normal = np.array(odac_list)
+            force0_list_normal = np.array(force0_list)
+            force1_list_normal = np.array(force1_list)
+            idx = -1
+            odac_optimal = odac_list_normal[idx]
         '''
         print(force0_overflow)
         print(force1_overflow)
