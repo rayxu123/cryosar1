@@ -29,9 +29,9 @@ import subprocess
 from bitstring import BitArray
 
 # Some constants for ADC GPIO on the hacked-up second FTDI FT2232 module
-SPISEL10_MASK = 0x03 # GPIO AD1,0
-SPISEL1_MASK = 0x02 # GPIO AD1
-SPISEL0_MASK = 0x01 # GPIO AD0
+SPISEL10_MASK = 0x30 # GPIO AD5,4
+SPISEL1_MASK = 0x20 # GPIO AD5
+SPISEL0_MASK = 0x10 # GPIO AD4
 
 ## HACK: 
 # SPIMUX is a bool to determine if this class controls the DUT or the AD5313/AD7888 combo.
@@ -60,8 +60,9 @@ class ftdispi:
                     
                 ## HACK: Set SPI MUX using a second FTDI FT2232 device on bus A.
                 if SPIMUX is True:
-                    self.mux = gpio.GpioAsyncController()
-                    self.mux.configure('ftdi://ftdi:2232:FT74A2JW/1')
+                    self.ftdi2 = spi.SpiController()
+                    self.ftdi2.configure('ftdi://ftdi:2232:FT74A2JW/1')
+                    self.mux = self.ftdi2.get_gpio()
                     
                 if SPIMUX is True:
                     # Get 3 SPI ports to a SPI slave w/ /CS on A*BUS3,4,5,6 and SPI mode 0 @ 1MHz
@@ -73,6 +74,9 @@ class ftdispi:
                     self.adc2.flush()
                     self.adc3 = self.ftdi.get_port(cs=3, freq=1E6, mode=mode)
                     self.adc3.flush()
+                    # Fourth ADC is on the second FTDI
+                    self.adc4 = self.ftdi2.get_port(cs=0, freq=1E6, mode=mode)
+                    self.adc4.flush()
                 else:
                     # Get a SPI port to a SPI slave w/ /CS on A*BUS3 and SPI mode 0 @ 1MHz
                     self.spi = self.ftdi.get_port(cs=0, freq=1E6, mode=mode)
@@ -117,9 +121,9 @@ class ftdispi:
     def setSPIMUX(self, val):
         if self.SPIMUX is True:
             if val == 0:    self.mux.write(0x00 & SPISEL10_MASK)
-            elif val == 1:  self.mux.write(0x01 & SPISEL10_MASK)
-            elif val == 2:  self.mux.write(0x02 & SPISEL10_MASK)
-            elif val == 3:  self.mux.write(0x03 & SPISEL10_MASK)
+            elif val == 1:  self.mux.write(0x10 & SPISEL10_MASK)
+            elif val == 2:  self.mux.write(0x20 & SPISEL10_MASK)
+            elif val == 3:  self.mux.write(0x30 & SPISEL10_MASK)
             else: print("Invalid!")
         else: print("Not supported!")
         time.sleep(0.1) # Let signal settle

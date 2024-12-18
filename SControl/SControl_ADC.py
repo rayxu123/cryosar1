@@ -88,12 +88,34 @@ class SControl_ADC:
                 }
         if self.args.quiet is False: print(adc3)
         
+        # Read from ADC4 on FTDI #2
+        self.spi.setSPIMUX(1)
+        adcVal = []
+        for i in range(8):
+            # Do a dummy read 
+            adcRead = self.spi.readAD7188(self.spi.adc4, i)
+            # Read 
+            adcRead = self.spi.readAD7188(self.spi.adc4, i)
+            adcVal.append(adcRead)
+            
+        adc4 = {'VREFP_EXT' : adcVal[0],
+                'VREFCM_IN' : adcVal[1],
+                'VERFN_EXT' : adcVal[2],
+                'VREFN_IN' : adcVal[3],
+                'VREFP_IN' : adcVal[4],
+                'VREFCM_EXT' : adcVal[5],
+                'IBIAS25_SENSE_P' : adcVal[6],
+                'IBIAS25_SENSE_N' : adcVal[7]
+                }
+        if self.args.quiet is False: print(adc4)
+        
         # Write to file
         with open('./output/adc.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for key,value in adc1.items(): writer.writerow([key, value])
             for key,value in adc2.items(): writer.writerow([key, value])
             for key,value in adc3.items(): writer.writerow([key, value])
+            for key,value in adc4.items(): writer.writerow([key, value])
         
                     
                     
