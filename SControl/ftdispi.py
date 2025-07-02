@@ -131,11 +131,14 @@ class ftdispi:
     # Reads from AD71888
     # Addr is int 0-7 for inputs 1-8
     # Returns unsigned int of the ADC value.  To get volts, multiply by 2.5/4096
-    def readAD7188(self, spiObj, addr):
-        bitsWr = BitArray(bin='00'+BitArray(uint=addr, length=3).bin+'1'+'00'+'00000000')
-        bitsRead = spiObj.exchange(out=bitsWr.bytes, readlen=int(bitsWr.len/8), start=True, stop=True, duplex=True)
-        bitsRead = BitArray(bytes=bitsRead)
-        return bitsRead.uint
+    def readAD7188(self, spiObj, addr, numAvg=1):
+        readList = []
+        for i in range(numAvg):        
+            bitsWr = BitArray(bin='00'+BitArray(uint=addr, length=3).bin+'1'+'00'+'00000000')
+            bitsRead = spiObj.exchange(out=bitsWr.bytes, readlen=int(bitsWr.len/8), start=True, stop=True, duplex=True)
+            bitsRead = BitArray(bytes=bitsRead)
+            readList.append(bitsRead.uint)
+        return sum(readList) / float(len(readList))
 
 
     # Returns next greater multiple of 8

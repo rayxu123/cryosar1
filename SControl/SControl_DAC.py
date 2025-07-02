@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', dest='override', action='append',
                         help="Overrides specific fields on startup.  May specify more than once.  Specified as '<field name>,<value>' pairs.  Where <field name> is from the section name and <value> must be a bit string in order of MSB...LSB.  For example, 'ODAC_CODE,11111111' or 'CAL_FORCE_P,000111111111111'.  Field min and max must be obeyed, otherwise the bitstring will be truncated.")
     parser.add_argument('-r', dest='read', action='store_true', default=False, help="Reads from ADC's, writes values to an output file, and exit.  DAC settings are not touched.")
+    parser.add_argument('--average', dest='average', action='store', default=1, help="Number of readings to average (default: 1).")
     parser.add_argument('-q', dest='quiet', action='store_true', default=False, help="Do not print ADC output to console.")
     args = parser.parse_args()
     # Launch application

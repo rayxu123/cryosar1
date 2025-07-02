@@ -74,7 +74,7 @@ class TMon_GUI(QWidget):
         self.gpib.query("hp3458a", "TRIG SGL")
         self.gpib.resetBuffers()
         ## Initialize pandas
-        if self.args.disableOutfile:
+        if not self.args.disableOutfile:
             userCommentsDict = {"twowire": self.args.twowire,
                                 "noconnect": self.args.noConnect,
                                 "gpibidn": self.gpibid,
@@ -113,18 +113,22 @@ class TMon_GUI(QWidget):
             # Take temperature sensor reading
             self.gpib.write("hp3458a", "MATH CRTD85")
             self.sensorTemp = float(self.gpib.query("hp3458a", "TRIG SGL"))
+            # convert to K
+            self.sensorTemp = self.sensorTemp + 273.15
             # Save data
-            if self.args.disableOutfile:
+            if not self.args.disableOutfile:
                 dataDict = {
                     "time": self.now,
                     "ohm": self.ohm,
-                    "rtd_tempc": self.sensorTemp,
-                    "instr_tempc": self.instrTemp
+                    "rtd_tempk": self.sensorTemp,
+                    "instr_tempk": self.instrTemp
                     }
                 self.pw.appendData(dataDict)
             # display temperature
-            dispString = "{:+08.5f} ".format(self.sensorTemp)+u" \u00b0C"
+            dispString = "{:+08.5f} ".format(self.sensorTemp)+u" \u00b0K"
             self.labelObj.setText(dispString)
+            ## Update last measurement file
+            with open("sensor_last", "w") as f: f.write("{:03.3f}".format(self.sensorTemp))
             # Print status
             if self.args.twowire:
                 if self.pw == None:
@@ -161,7 +165,7 @@ class TMon_GUI(QWidget):
         while self.measure:
             pass
         self.gpib.close()
-        if self.args.disableOutfile: self.pw.writeCSV()
+        if not self.args.disableOutfile: self.pw.writeCSV()
 
 
     

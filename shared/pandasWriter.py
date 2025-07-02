@@ -26,7 +26,7 @@ class pandasWriter:
     # csvFilePathPrefix: name appended to output file name
     # enableIdx: set to True to add a column with a monotonic incrementing row number (starting at 0)
     # maxRowsPerFile: maximum number of rows per csv file.  Once passed, the csv file is rotated: a new csv file is created (with the same basename) and the dataframe table is cleared, however idx keeps on incrementing
-    def __init__(self, userComments={}, folderPrefix='', csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536, compress=True):
+    def __init__(self, userComments={}, folderPrefix='', csvFilePrefix='', enableIdx=True, maxRowsPerFile=65536, compress=False):
         # Create empty dataframe 
         self.df = pd.DataFrame()
         self.idx = 0

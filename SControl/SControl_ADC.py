@@ -32,7 +32,7 @@ class SControl_ADC:
             # Do a dummy read 
             self.spi.readAD7188(self.spi.adc1, i)
             # Read 
-            adcRead = self.spi.readAD7188(self.spi.adc1, i)
+            adcRead = self.spi.readAD7188(self.spi.adc1, i, int(self.args.average))
             adcVal.append(adcRead)
             
         adc1 = {'ADC_TESTPOINT' : adcVal[0],
@@ -53,7 +53,7 @@ class SControl_ADC:
             # Do a dummy read 
             self.spi.readAD7188(self.spi.adc2, i)
             # Read 
-            adcRead = self.spi.readAD7188(self.spi.adc2, i)
+            adcRead = self.spi.readAD7188(self.spi.adc2, i, int(self.args.average))
             adcVal.append(adcRead)
             
         adc2 = {'ADC_VBP_SW' : adcVal[0],
@@ -74,7 +74,7 @@ class SControl_ADC:
             # Do a dummy read 
             adcRead = self.spi.readAD7188(self.spi.adc3, i)
             # Read 
-            adcRead = self.spi.readAD7188(self.spi.adc3, i)
+            adcRead = self.spi.readAD7188(self.spi.adc3, i, int(self.args.average))
             adcVal.append(adcRead)
             
         adc3 = {'ADC_VBN_CMP' : adcVal[0],
@@ -95,7 +95,7 @@ class SControl_ADC:
             # Do a dummy read 
             adcRead = self.spi.readAD7188(self.spi.adc4, i)
             # Read 
-            adcRead = self.spi.readAD7188(self.spi.adc4, i)
+            adcRead = self.spi.readAD7188(self.spi.adc4, i, int(self.args.average))
             adcVal.append(adcRead)
             
         adc4 = {'VREFP_EXT' : adcVal[0],
