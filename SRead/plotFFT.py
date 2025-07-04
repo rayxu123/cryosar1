@@ -99,8 +99,9 @@ def plotFFT(data, fs, plot=True, showNow=True, title=None, save=None, numharm=9,
         if title is not None: axs_FFT.title.set_text(title)
         axs_FFT.set_xlabel("Frequency [Hz]")
         axs_FFT.set_ylabel("PSD [dBc]")
-        axs_FFT.set_xlim(0, np.amax(freq)+np.unique(np.diff(freq))) # Add one more frequency step to the right to make the last x tick show
+        axs_FFT.set_xlim(0, np.amax(freq)+0.5*np.unique(np.diff(freq))) # Add one more frequency step to the right to make the last x tick show
         axs_FFT.set_ylim(20*(np.floor(np.amin(PSD)/20)), 0)
+        axs_FFT.ticklabel_format(axis='x', style='sci', scilimits=(0,0))
         # Annotate
         if fmax_idx > len(freq)/2:
             axs_FFT.text(freq[int(np.floor(sig_low_idx-0.15*data_len))], -50, "SNDR = "+"{:.1f}".format(SNDR)+" dB\nENOB = "+"{:.2f}".format(ENOB)+" bits\nSFDR = "+"{:.1f}".format(SFDR)+" dBc\nSNR = "+"{:.1f}".format(SNR)+" dB\nSDR = "+"{:.1f}".format(SDR)+" dB", horizontalalignment='center', backgroundcolor='white', bbox=dict(ec='black', fc='white'))

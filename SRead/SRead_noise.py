@@ -58,11 +58,12 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
     # Take a pedestal
-    data, valid = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+    data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=32)
     # Round
     data = [round(i) for i in data] 
     #print(np.unique(data))
     print("Std dev: "+str(np.std(data)))
+    print("Bins: "+str(np.unique(data)))
     # Plot histogram
     fig, axs = plt.subplots(1,1,tight_layout=True)
     axs.hist(data, bins=len(np.unique(data)), edgecolor = "black")

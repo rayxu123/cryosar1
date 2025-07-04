@@ -40,7 +40,7 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
@@ -55,19 +55,19 @@ if __name__ == "__main__":
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
-    
-    # Uncomment here to apply pre-defined calibration values
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "01110110"
-    cal.weights = [0.00000000, 1915.50281350, 1097.07841936, 630.85242642, 359.38290361, 206.01233453, 119.53742395, 69.96035303, 40.30167688, 23.99275208, 13.43447876, 8.04861450, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01111010"
+    cal.weights = [0.00000000, 1882.87669349, 1078.34296953, 619.24321189, 353.56794070, 202.51545550, 117.38199000, 68.94950881, 39.24317515, 23.55863953, 13.51199341, 7.84124756, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
     
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
