@@ -397,6 +397,7 @@ class calibration:
         odac_list.append(odac_value)
         
         
+        
         # Pick the most optimal ODAC value 
         # Check for any over/under flow in force results 
         force0_overflow = np.array(np.abs(np.array(force0_list)) == np.sum(self.CAL_WEIGHTS_SEED, axis=None))
@@ -416,6 +417,7 @@ class calibration:
             force1_list_normal = np.array(force1_list)
             idx = -1
             odac_optimal = odac_list_normal[idx]
+        
         '''
         print(force0_overflow)
         print(force1_overflow)
@@ -424,6 +426,10 @@ class calibration:
         '''
         '''
         # Pick the last ODAC iteration 
+        mean_list_normal = np.array(mean_list)
+        odac_list_normal = np.array(odac_list)
+        force0_list_normal = np.array(force0_list)
+        force1_list_normal = np.array(force1_list)
         idx = len(odac_list)-1
         odac_optimal = odac_list[idx]
         '''
