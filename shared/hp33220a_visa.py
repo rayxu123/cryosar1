@@ -55,6 +55,9 @@ class hp33220a_visa():
     def getAmp(self):
         return float(self.inst.query("VOLT?"))
         
+    def close(self):
+        self.inst.close()
+        
 
 
 
