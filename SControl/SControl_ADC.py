@@ -100,7 +100,7 @@ class SControl_ADC:
             
         adc4 = {'VREFP_EXT' : adcVal[0],
                 'VREFCM_IN' : adcVal[1],
-                'VERFN_EXT' : adcVal[2],
+                'VREFN_EXT' : adcVal[2],
                 'VREFN_IN' : adcVal[3],
                 'VREFP_IN' : adcVal[4],
                 'VREFCM_EXT' : adcVal[5],
