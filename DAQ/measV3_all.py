@@ -160,7 +160,7 @@ def sineSweep(freq, initAmp, dataDir):
         awg.initSine(freq, awgAmp)
         awg.setOutput(True)
         # Let signals settle
-        time.sleep(1.4)
+        time.sleep(1.5)
         
         # Take data
         data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
