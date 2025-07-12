@@ -203,7 +203,7 @@ def sineSweep(freq, initAmp, dataDir):
     plt.close('all')
     # Debug plots
     fig, axs = plt.subplots(1,1,tight_layout=True)
-    axs.semilogx(data_range_list, data_SNDR_list, '-*', basex=2)  # This property might be called 'base' or 'basex' depending on matplotlib version
+    axs.semilogx(data_range_list, data_SNDR_list, '-*', base=2)  # This property might be called 'base' or 'basex' depending on matplotlib version
     axs.xaxis.set_minor_locator(LogLocator(base=2, subs =[1.5]))
     axs.yaxis.set_major_locator(MultipleLocator(5))
     axs.yaxis.set_minor_locator(MultipleLocator(1))
@@ -469,7 +469,8 @@ if __name__ == "__main__":
     cal = calibration.calibration(fpga)
     
     # Init AWG 
-    awg = hp33220a_visa.hp33220a_visa(addr='USB0::0x0957::0x0407::MY44012701::INSTR')
+    #awg = hp33220a_visa.hp33220a_visa(addr='USB0::0x0957::0x0407::MY44012701::INSTR')
+    awg = hp33220a_visa.hp33220a_visa(addr='USB0::0x0957::0x0407::MY44012694::INSTR')
     awg.initSine(c.awg1MHz_freq, c.awg1MHz_amp)
     awg.setOutput(False)
     

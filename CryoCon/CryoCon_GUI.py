@@ -147,7 +147,10 @@ class CryoCon_GUI(QWidget):
             self.cc.query("loop 1:type "+self.loopTypeObj.currentText())
             self.cc.query("loop 1:range "+self.loopRangeObj.currentText())
             self.cc.query("loop 1:setpt "+self.loopSetObj.text())
-            self.cc.clear()
+            try:
+                self.cc.clear()
+            except:
+                pass
             # Disable D control (DGain was 7.5).  PI control recomended with diode type sensors.
             #self.cc.query("loop 1:DGA 0")
             self.cc.query("loop 1:PGA "+str(self.args.pgain))
