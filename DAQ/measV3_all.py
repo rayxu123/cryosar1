@@ -454,6 +454,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', dest='setTemp', action='store', default=300, help="Set temperature, in kelvin.  For metadata only.")
     parser.add_argument('-n', dest='name', action='store', default='', help="Run name.")
     parser.add_argument('--tmon', dest='tmon', action='store_true', default=False, help="Read temperature from TMon application.  Default=False")
+    parser.add_argument('--dc', dest='dc', action='store_true', default=False, help="Only do DC measurement.  Default=False")
     parser.add_argument('--numpts', dest='numpts', action='store', default=52, type=int, help="Number of linearly space amplitude points.  (Defualt: 52)")
     parser.add_argument('--mult', dest='mult', action='store', default=32, type=int, help="Number of 32k sample multiples for INL/DNL and pedestal.  Default: 32")
     args = parser.parse_args()
@@ -507,6 +508,8 @@ if __name__ == "__main__":
             writer.writerow([key, value])
     temperature = str(readTemp(args.tmon))
     with open("./"+run_dir+"/temperature.csv", "w") as f: f.write(temperature)
+    
+    if args.dc is True: exit()
     
     # Test: calibration
     wrapper(None, None, False, calibrate, run_dir)
