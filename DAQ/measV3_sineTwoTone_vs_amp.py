@@ -30,6 +30,8 @@ import logger
 import pandas as pd
 
 
+
+
 if __name__ == "__main__":   
     # Some constants
     n1dB = np.power(10, -1/20)
@@ -152,6 +154,7 @@ if __name__ == "__main__":
     ## Sweep AWG1
     data1_subfolder_list = []
     data1_range_cal_list = []
+    data1_rms_cal_list = []
     data1_unique_cal_list = []
     data1_ENOB_cal_list = []
     data1_SNDR_cal_list = []
@@ -207,13 +210,14 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, calibrated ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_cal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data1_range_cal_list.append(datauncal_range)
-        data1_unique_cal_list.append(datauncal_unique)
+        data1_range_cal_list.append(datacal_range)
+        data1_rms_cal_list.append(np.std(data))
+        data1_unique_cal_list.append(datacal_unique)
         data1_ENOB_cal_list.append(datacal_ENOB)
         data1_SNDR_cal_list.append(datacal_SNDR)
         data1_SFDR_cal_list.append(datacal_SFDR)
@@ -223,6 +227,8 @@ if __name__ == "__main__":
         # Save raw data, calibrated ODAC
         np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal.txt", data)
         np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal_r2.txt", datar2)
+        
+        
         
         
         # Take data, zero ODAC
@@ -238,13 +244,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, zero ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacZS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data1_range_odacZS_list.append(datauncal_range)
-        data1_unique_odacZS_list.append(datauncal_unique)
+        data1_range_odacZS_list.append(datacal_range)
+        data1_unique_odacZS_list.append(datacal_unique)
         data1_ENOB_odacZS_list.append(datacal_ENOB)
         data1_SNDR_odacZS_list.append(datacal_SNDR)
         data1_SFDR_odacZS_list.append(datacal_SFDR)
@@ -269,13 +275,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, mid-scale ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacMS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data1_range_odacMS_list.append(datauncal_range)
-        data1_unique_odacMS_list.append(datauncal_unique)
+        data1_range_odacMS_list.append(datacal_range)
+        data1_unique_odacMS_list.append(datacal_unique)
         data1_ENOB_odacMS_list.append(datacal_ENOB)
         data1_SNDR_odacMS_list.append(datacal_SNDR)
         data1_SFDR_odacMS_list.append(datacal_SFDR)
@@ -300,13 +306,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, full-scale ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacFS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data1_range_odacFS_list.append(datauncal_range)
-        data1_unique_odacFS_list.append(datauncal_unique)
+        data1_range_odacFS_list.append(datacal_range)
+        data1_unique_odacFS_list.append(datacal_unique)
         data1_ENOB_odacFS_list.append(datacal_ENOB)
         data1_SNDR_odacFS_list.append(datacal_SNDR)
         data1_SFDR_odacFS_list.append(datacal_SFDR)
@@ -322,6 +328,7 @@ if __name__ == "__main__":
         'awgAmp': awg_list,
         'subfolder': data1_subfolder_list,
         'data_range_cal': data1_range_cal_list,
+        'data_rms_cal': data1_rms_cal_list,
         'data_unique_cal': data1_unique_cal_list,
         'data_ENOB_cal': data1_ENOB_cal_list,
         'data_SNDR_cal': data1_SNDR_cal_list,
@@ -363,6 +370,7 @@ if __name__ == "__main__":
     ## Sweep AWG2
     data2_subfolder_list = []
     data2_range_cal_list = []
+    data2_rms_cal_list = []
     data2_unique_cal_list = []
     data2_ENOB_cal_list = []
     data2_SNDR_cal_list = []
@@ -418,13 +426,14 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, calibrated ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_cal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data2_range_cal_list.append(datauncal_range)
-        data2_unique_cal_list.append(datauncal_unique)
+        data2_range_cal_list.append(datacal_range)
+        data2_rms_cal_list.append(np.std(data))
+        data2_unique_cal_list.append(datacal_unique)
         data2_ENOB_cal_list.append(datacal_ENOB)
         data2_SNDR_cal_list.append(datacal_SNDR)
         data2_SFDR_cal_list.append(datacal_SFDR)
@@ -434,6 +443,7 @@ if __name__ == "__main__":
         # Save raw data, calibrated ODAC
         np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal.txt", data)
         np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal_r2.txt", datar2)
+        
         
         
         # Take data, zero ODAC
@@ -449,13 +459,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, zero ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacZS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data2_range_odacZS_list.append(datauncal_range)
-        data2_unique_odacZS_list.append(datauncal_unique)
+        data2_range_odacZS_list.append(datacal_range)
+        data2_unique_odacZS_list.append(datacal_unique)
         data2_ENOB_odacZS_list.append(datacal_ENOB)
         data2_SNDR_odacZS_list.append(datacal_SNDR)
         data2_SFDR_odacZS_list.append(datacal_SFDR)
@@ -480,13 +490,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, mid-scale ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacMS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data2_range_odacMS_list.append(datauncal_range)
-        data2_unique_odacMS_list.append(datauncal_unique)
+        data2_range_odacMS_list.append(datacal_range)
+        data2_unique_odacMS_list.append(datacal_unique)
         data2_ENOB_odacMS_list.append(datacal_ENOB)
         data2_SNDR_odacMS_list.append(datacal_SNDR)
         data2_SFDR_odacMS_list.append(datacal_SFDR)
@@ -511,13 +521,13 @@ if __name__ == "__main__":
         if valid is False: print("WARNING: non-valid sample encountered!")
         
         # Datapoint statistics, full-scale ODAC
-        datauncal_unique = len(np.unique(np.round(data)))
-        datauncal_range = np.ptp(data)
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
         datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacFS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
-        data2_range_odacFS_list.append(datauncal_range)
-        data2_unique_odacFS_list.append(datauncal_unique)
+        data2_range_odacFS_list.append(datacal_range)
+        data2_unique_odacFS_list.append(datacal_unique)
         data2_ENOB_odacFS_list.append(datacal_ENOB)
         data2_SNDR_odacFS_list.append(datacal_SNDR)
         data2_SFDR_odacFS_list.append(datacal_SFDR)
@@ -533,6 +543,7 @@ if __name__ == "__main__":
         'awgAmp': awg_list,
         'subfolder': data2_subfolder_list,
         'data_range_cal': data2_range_cal_list,
+        'data_rms_cal': data2_rms_cal_list,
         'data_unique_cal': data2_unique_cal_list,
         'data_ENOB_cal': data2_ENOB_cal_list,
         'data_SNDR_cal': data2_SNDR_cal_list,
@@ -565,13 +576,29 @@ if __name__ == "__main__":
     df.to_csv(run_dir+"/sweep_AWG2.csv")    
     # Do not open plots, release memory
     plt.close('all')
+    
+    
+    # Calculate scaling ratios for AWG1 and AWG2 for two-tone measurement
+    p1 = np.polyfit(np.array(data1_rms_cal_list)*2*np.sqrt(2), awg_list, 1)   # slope is in Vpp/code range
+    p2 = np.polyfit(np.array(data2_rms_cal_list)*2*np.sqrt(2), awg_list, 1)
+    awg1_slope = p1[0]
+    awg2_slope = p2[0]
+    awg1_ratio = awg1_slope/(awg1_slope+awg2_slope)
+    awg2_ratio = awg2_slope/(awg1_slope+awg2_slope)
+    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)
+    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)
+    
+    awg1.initSine(awgFreq1, awg1_FS)
+    awg2.initSine(awgFreq2, awg2_FS)
+    
+    
 
 
     ## Cleanup
-    awg1.setOutput(False)
-    awg2.setOutput(False)
-    awg1.close()
-    awg2.close()
+    #awg1.setOutput(False)
+    #awg2.setOutput(False)
+    #awg1.close()
+    #awg2.close()
     fpga.close()
 
 
