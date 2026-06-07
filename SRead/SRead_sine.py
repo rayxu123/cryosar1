@@ -40,7 +40,7 @@ if __name__ == "__main__":
      
     
     # Uncomment here to run calibration (connect 50 ohm sma to signal input)
-    
+    '''
     f.write("CAL:function\n")
     # With the logger, textoutput from input() is not displayed.  workaround: print beforehand.
     print("CALIBRATION: Disable any input source.  Then press ENTER.")
@@ -55,20 +55,20 @@ if __name__ == "__main__":
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
     print("CALIBRATION: Attach signal input source.  Then press ENTER.")
     input("")
-    
-    # Uncomment here to apply pre-defined calibration values
     '''
+    # Uncomment here to apply pre-defined calibration values
+    
     f.write("CAL:predefined\n")
     print("Using predefined constants.")
-    cal.odac = "10000000"
-    cal.weights = [0.00000000, 1782.16474549, 1020.56752644, 586.01270483, 334.84727191, 191.60190872, 111.11377977, 65.40610792, 37.18622086, 22.42805481, 13.00886536, 7.49426270, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    cal.odac = "01110101"
+    cal.weights = [0.00000000, 1827.58368240, 1046.86900287, 600.86907152, 343.39610009, 196.53617856, 113.93648582, 66.88147999, 37.93098637, 22.86048889, 13.10705566, 7.57003784, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
 
     
 
     print("Calibrated ODAC: \""+str(cal.odac)+"\"")
     print("Calibrated weight:")
     print("["+', '.join([f'{item:.8f}' for item in cal.weights])+"]")
-    '''
+    
     # Uncomment here to apply play values
     '''
     print("Using predefined constants.")
@@ -151,8 +151,19 @@ if __name__ == "__main__":
     np.savetxt("./output/sine/data_uncal.txt", data)
 
 
-    plt.show() 
-
+    
+    plt.show()
+    
+    '''
+    plt.show(block=False)
+    plt.draw()
+    plt.pause(0.1) 
+    print("<Hit Enter To Close>", flush=True)
+    input("")
+    plt.close('all')
+    exit()
+    '''
+    
 
     
 

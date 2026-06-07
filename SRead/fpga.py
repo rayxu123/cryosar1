@@ -129,6 +129,9 @@ class fpga:
         else:
             # No connect is asserted
             return [0]*numSamples*mult, True, [0]*numSamples*mult        
+            
+    def close(self):
+        self.xem.Close()
 
 # Method used by multiprocessing pool to parse data
 # Input: fifodata (uint16), and a list of 16 bit weights from MSB to LSB or "None" to use radix-2 weighting, and whether to use bipolar weighting
@@ -150,11 +153,6 @@ def parse(fifodata, weighting, bipolar, printBinary):
             fifodata = [(2*j)-1 for j in fifodata]    # Convert 0,1 to -1,+1
             #fifodata = [0.5*j for j in fifodata]        # Re-normalize to account for the doubling in magnitude
         return np.dot(fifodata, weighting), valid
-
-
-
-
-
 
 
     
