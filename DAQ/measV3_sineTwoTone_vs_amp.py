@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument('--npri1', dest='AWGnpri1', action='store', default='3733', type=float, help="AWG prime number of cycles to set frequency.  Freq=(npri/32768)*sampling rate.")
     parser.add_argument('--npri2', dest='AWGnpri2', action='store', default='3571', type=float, help="AWG prime number of cycles to set frequency.  Freq=(npri/32768)*sampling rate.")
     parser.add_argument('--amp', dest='AWGamp_initial', action='store', default='5', help="AWG amplitude in Vpp that is approximately -1dBFS.  The actual amplitude is fine tuned automatically.")
-    parser.add_argument('--numpts', dest='numpts', action='store', default=50, type=int, help="Number of linearly space amplitude points.  (Defualt: 50)")
+    parser.add_argument('--numpts', dest='numpts', action='store', default=64, type=int, help="Number of linearly space amplitude points.  (Defualt: 50)")
     args = parser.parse_args()
     
     # Init readout 
