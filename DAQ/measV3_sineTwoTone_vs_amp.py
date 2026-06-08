@@ -608,8 +608,8 @@ if __name__ == "__main__":
     awg1_list = np.flip(awg1_list)
     awg2_list.sort()
     awg2_list = np.flip(awg2_list)
-    awg1_list = awg1_list[awg1_list >= 0.01]
-    awg2_list = awg2_list[awg2_list >= 0.01]
+    awg1_list = awg1_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
+    awg2_list = awg2_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
     
     ## Two tone sweep
     dataTT_subfolder_list = []
