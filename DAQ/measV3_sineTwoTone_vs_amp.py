@@ -591,6 +591,8 @@ if __name__ == "__main__":
     awg1.initSine(awgFreq1, awg1_FS)
     awg2.initSine(awgFreq2, awg2_FS)
     
+    
+    
     ## Make amplitude sweep list for two-tone sweep first
     awg_list = np.logspace(np.log10(cal_fs_LSB*0.001), np.log10(cal_fs_LSB), num=args.numpts, endpoint=True)
     np.concatenate([awg_list, [cal_fs_LSB*n1dB]])
@@ -598,19 +600,28 @@ if __name__ == "__main__":
     np.concatenate([awg_list, [cal_fs_LSB*n6dB]])
     awg1_list = awg_list*awg1_slope*awg1_ratio
     awg2_list = awg_list*awg2_slope*awg2_ratio
+    # This must be atomic operation
+    awg1_list_new = awg1_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
+    awg2_list_new = awg2_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
+    awg1_list = awg1_list_new
+    awg2_list = awg2_list_new
+    awg1_list.sort()
+    awg2_list.sort()
     # Round to nearest 1 mV
     awg1_list = np.round(awg1_list*1000)/1000
-    awg1_list = np.unique(awg1_list)  # Remove duplicates otherwise folder names will collide
     awg2_list = np.round(awg2_list*1000)/1000
-    awg2_list = np.unique(awg2_list)  # Remove duplicates otherwise folder names will collide
+    # Remove duplicates otherwise folder names will collide.  This must be an atomic operation
+    mask_list = [True]*len(awg1_list)
+    for n in range(1,len(awg1_list)):
+        if awg1_list[n] == awg1_list[n-1]: mask_list[n] = False
+        if awg2_list[n] == awg2_list[n-1]: mask_list[n] = False
+    awg1_list = awg1_list[mask_list]
+    awg2_list = awg2_list[mask_list]
     # Sort descending
-    awg1_list.sort()
     awg1_list = np.flip(awg1_list)
-    awg2_list.sort()
     awg2_list = np.flip(awg2_list)
-    awg1_list = awg1_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
-    awg2_list = awg2_list[(awg1_list >= 0.01) & (awg2_list >= 0.01)]
-    
+
+
     ## Two tone sweep
     dataTT_subfolder_list = []
     dataTT_range_cal_list = []
