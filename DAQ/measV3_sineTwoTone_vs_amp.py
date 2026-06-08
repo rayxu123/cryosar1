@@ -136,7 +136,7 @@ if __name__ == "__main__":
     
     
     ## Make amplitude sweep list for single-tone sweep first
-    awg_list = np.logspace(0.01, 10, num=args.numpts, endpoint=True)
+    awg_list = np.logspace(np.log10(0.01), np.log10(10), num=args.numpts, endpoint=True)
     # Round to nearest 1 mV
     awg_list = np.round(awg_list*1000)/1000
     awg_list = np.unique(awg_list)  # Remove duplicates otherwise folder names will collide
@@ -592,7 +592,7 @@ if __name__ == "__main__":
     awg2.initSine(awgFreq2, awg2_FS)
     
     ## Make amplitude sweep list for two-tone sweep first
-    awg_list = np.logspace(cal_fs_LSB*0.001, cal_fs_LSB, num=args.numpts, endpoint=True)
+    awg_list = np.logspace(np.log10(cal_fs_LSB*0.001), np.log10(cal_fs_LSB), num=args.numpts, endpoint=True)
     np.concatenate([awg_list, [cal_fs_LSB*n1dB]])
     np.concatenate([awg_list, [cal_fs_LSB*n3dB]])
     np.concatenate([awg_list, [cal_fs_LSB*n6dB]])
