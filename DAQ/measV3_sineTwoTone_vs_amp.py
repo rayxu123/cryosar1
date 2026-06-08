@@ -35,17 +35,8 @@ import pandas as pd
 if __name__ == "__main__":   
     # Some constants
     n1dB = np.power(10, -1/20)
-    n2dB = np.power(10, -2/20)
     n3dB = np.power(10, -3/20)
-    n4dB = np.power(10, -4/20)
-    n5dB = np.power(10, -5/20)
     n6dB = np.power(10, -6/20)
-    n7dB = np.power(10, -7/20)
-    n8dB = np.power(10, -8/20)
-    n9dB = np.power(10, -9/20)
-    n10dB = np.power(10, -10/20)
-    n11dB = np.power(10, -11/20)
-    n12dB = np.power(10, -12/20)
     
     # Turn off interactive plotting.  Want to save FFT plots but not show them. 
     plt.ioff()
@@ -57,8 +48,8 @@ if __name__ == "__main__":
     parser.add_argument('-d', dest='debug', action='store_true', default=False, help="Verbose output/debug output.")
     parser.add_argument('--npri1', dest='AWGnpri1', action='store', default='3733', type=float, help="AWG prime number of cycles to set frequency.  Freq=(npri/32768)*sampling rate.")
     parser.add_argument('--npri2', dest='AWGnpri2', action='store', default='3571', type=float, help="AWG prime number of cycles to set frequency.  Freq=(npri/32768)*sampling rate.")
-    parser.add_argument('--amp', dest='AWGamp_initial', action='store', default='512', help="AWG amplitude in Vpp that is approximately -1dBFS.  The actual amplitude is fine tuned automatically.")
-    parser.add_argument('--numpts', dest='numpts', action='store', default=50, type=int, help="Number of linearly space amplitude points.  (Defualt: 512)")
+    parser.add_argument('--amp', dest='AWGamp_initial', action='store', default='5', help="AWG amplitude in Vpp that is approximately -1dBFS.  The actual amplitude is fine tuned automatically.")
+    parser.add_argument('--numpts', dest='numpts', action='store', default=50, type=int, help="Number of linearly space amplitude points.  (Defualt: 50)")
     args = parser.parse_args()
     
     # Init readout 
@@ -108,6 +99,13 @@ if __name__ == "__main__":
         sys.exit(e)
     # Wait for signal to settle 
     time.sleep(1.0)
+    
+    
+    # Uncomment here to apply play values
+    '''
+    cal.odac = "01110101"
+    cal.weights = [0.00000000, 1827.58368240, 1046.86900287, 600.86907152, 343.39610009, 196.53617856, 113.93648582, 66.88147999, 37.93098637, 22.86048889, 13.10705566, 7.57003784, 5.00000000, 3.00000000, 2.00000000, 1.00000000]
+    '''
     
     
     ## Calibrate once to get the fullscale 
@@ -588,17 +586,252 @@ if __name__ == "__main__":
     awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)
     awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)
     
+    
+    
     awg1.initSine(awgFreq1, awg1_FS)
     awg2.initSine(awgFreq2, awg2_FS)
+    
+    ## Make amplitude sweep list for two-tone sweep first
+    awg_list = np.linspace(0, cal_fs_LSB, num=args.numpts, endpoint=True)
+    np.concatenate([awg_list, [cal_fs_LSB*n1dB]])
+    np.concatenate([awg_list, [cal_fs_LSB*n3dB]])
+    np.concatenate([awg_list, [cal_fs_LSB*n6dB]])
+    awg1_list = awg_list*awg1_slope*awg1_ratio
+    awg2_list = awg_list*awg2_slope*awg2_ratio
+    # Round to nearest 1 mV
+    awg1_list = np.round(awg1_list*1000)/1000
+    awg1_list = np.unique(awg1_list)  # Remove duplicates otherwise folder names will collide
+    awg2_list = np.round(awg2_list*1000)/1000
+    awg2_list = np.unique(awg2_list)  # Remove duplicates otherwise folder names will collide
+    # Sort descending
+    awg1_list.sort()
+    awg1_list = np.flip(awg1_list)
+    awg2_list.sort()
+    awg2_list = np.flip(awg2_list)
+    awg1_list = awg1_list[awg1_list >= 0.01]
+    awg2_list = awg2_list[awg2_list >= 0.01]
+    
+    ## Two tone sweep
+    dataTT_subfolder_list = []
+    dataTT_range_cal_list = []
+    dataTT_rms_cal_list = []
+    dataTT_unique_cal_list = []
+    dataTT_ENOB_cal_list = []
+    dataTT_SNDR_cal_list = []
+    dataTT_SFDR_cal_list = []
+    dataTT_SNR_cal_list = []
+    dataTT_SDR_cal_list = []
+    dataTT_range_odacZS_list = []
+    dataTT_unique_odacZS_list = []
+    dataTT_ENOB_odacZS_list = []
+    dataTT_SNDR_odacZS_list = []
+    dataTT_SFDR_odacZS_list = []
+    dataTT_SNR_odacZS_list = []
+    dataTT_SDR_odacZS_list = []
+    dataTT_range_odacMS_list = []
+    dataTT_unique_odacMS_list = []
+    dataTT_ENOB_odacMS_list = []
+    dataTT_SNDR_odacMS_list = []
+    dataTT_SFDR_odacMS_list = []
+    dataTT_SNR_odacMS_list = []
+    dataTT_SDR_odacMS_list = []
+    dataTT_range_odacFS_list = []
+    dataTT_unique_odacFS_list = []
+    dataTT_ENOB_odacFS_list = []
+    dataTT_SNDR_odacFS_list = []
+    dataTT_SFDR_odacFS_list = []
+    dataTT_SNR_odacFS_list = []
+    dataTT_SDR_odacFS_list = []
+    for awg1Amp,awg2Amp in zip(awg1_list,awg2_list):
+        # Status printing 
+        print(" ======== ======== ")
+        print("Setting AWG1 (TT): AWGAMP={:f} in range [{:f}, {:f}]".format(awg1Amp, np.amin(awg1_list), np.amax(awg1_list)))
+        # Create raw data directory 
+        rawdata_awgamp = "AWGTT_AWGAMP{:05d}".format(int(awg1Amp*1000))
+        os.makedirs(run_dir+"/"+rawdata_awgamp, exist_ok=True)
+        dataTT_subfolder_list.append(rawdata_awgamp)
+        
+        # Set AWG amp  
+        awg1.initSine(awgFreq1, awg1Amp)
+        awg1.setOutput(True)
+        awg2.initSine(awgFreq2, awg2Amp)
+        awg2.setOutput(True)
+        # Let signals settle
+        time.sleep(1.5)
+        
+        # Take data, calibrated ODAC
+        try:
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
+                "-b",
+                "-o", "ODAC_CODE,"+cal.odac,
+                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+        except Exception as e:
+            sys.exit(e)
+        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+        if valid is False: print("WARNING: non-valid sample encountered!")
+        
+        # Datapoint statistics, calibrated ODAC
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_cal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        # Do not open plots, release memory
+        plt.close('all')
+        dataTT_range_cal_list.append(datacal_range)
+        dataTT_rms_cal_list.append(np.std(data))
+        dataTT_unique_cal_list.append(datacal_unique)
+        dataTT_ENOB_cal_list.append(datacal_ENOB)
+        dataTT_SNDR_cal_list.append(datacal_SNDR)
+        dataTT_SFDR_cal_list.append(datacal_SFDR)
+        dataTT_SNR_cal_list.append(datacal_SNR)
+        dataTT_SDR_cal_list.append(datacal_SDR)
+        
+        # Save raw data, calibrated ODAC
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal.txt", data)
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_cal_r2.txt", datar2)
+        
+        
+        
+        # Take data, zero ODAC
+        try:
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
+                "-b",
+                "-o", "ODAC_CODE,"+"00000000",
+                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+        except Exception as e:
+            sys.exit(e)
+        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+        if valid is False: print("WARNING: non-valid sample encountered!")
+        
+        # Datapoint statistics, zero ODAC
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacZS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        # Do not open plots, release memory
+        plt.close('all')
+        dataTT_range_odacZS_list.append(datacal_range)
+        dataTT_unique_odacZS_list.append(datacal_unique)
+        dataTT_ENOB_odacZS_list.append(datacal_ENOB)
+        dataTT_SNDR_odacZS_list.append(datacal_SNDR)
+        dataTT_SFDR_odacZS_list.append(datacal_SFDR)
+        dataTT_SNR_odacZS_list.append(datacal_SNR)
+        dataTT_SDR_odacZS_list.append(datacal_SDR)
+        
+        # Save raw data, zero ODAC
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacZS.txt", data)
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacZS_r2.txt", datar2)
+        
+        
+        # Take data, mid-scale ODAC
+        try:
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
+                "-b",
+                "-o", "ODAC_CODE,"+"10000000",
+                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+        except Exception as e:
+            sys.exit(e)
+        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+        if valid is False: print("WARNING: non-valid sample encountered!")
+        
+        # Datapoint statistics, mid-scale ODAC
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacMS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        # Do not open plots, release memory
+        plt.close('all')
+        dataTT_range_odacMS_list.append(datacal_range)
+        dataTT_unique_odacMS_list.append(datacal_unique)
+        dataTT_ENOB_odacMS_list.append(datacal_ENOB)
+        dataTT_SNDR_odacMS_list.append(datacal_SNDR)
+        dataTT_SFDR_odacMS_list.append(datacal_SFDR)
+        dataTT_SNR_odacMS_list.append(datacal_SNR)
+        dataTT_SDR_odacMS_list.append(datacal_SDR)
+        
+        # Save raw data, mid-scale ODAC
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacMS.txt", data)
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacMS_r2.txt", datar2)
+        
+        
+        # Take data, full-scale ODAC
+        try:
+            subprocess.run([sys.executable, 
+                "./../SControl/SControl.py", 
+                "-b",
+                "-o", "ODAC_CODE,"+"11111111",
+                "-f", "./../SControl/config/CryoSAR1.cfg"], check=True)
+        except Exception as e:
+            sys.exit(e)
+        data, valid, datar2 = fpga.takeData("data", bipolar=False, printBinary=False, weighting=cal.weights, mult=1)
+        if valid is False: print("WARNING: non-valid sample encountered!")
+        
+        # Datapoint statistics, full-scale ODAC
+        datacal_unique = len(np.unique(np.round(data)))
+        datacal_range = np.ptp(data)
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacFS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        # Do not open plots, release memory
+        plt.close('all')
+        dataTT_range_odacFS_list.append(datacal_range)
+        dataTT_unique_odacFS_list.append(datacal_unique)
+        dataTT_ENOB_odacFS_list.append(datacal_ENOB)
+        dataTT_SNDR_odacFS_list.append(datacal_SNDR)
+        dataTT_SFDR_odacFS_list.append(datacal_SFDR)
+        dataTT_SNR_odacFS_list.append(datacal_SNR)
+        dataTT_SDR_odacFS_list.append(datacal_SDR)
+        
+        # Save raw data, full-scale ODAC
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacFS.txt", data)
+        np.savetxt(run_dir+"/"+rawdata_awgamp+"/data_odacFS_r2.txt", datar2)
+    
+    # Save aggregate data for AWGTT sweep
+    data = {
+        'awg1Amp': awg1_list,
+        'awg2Amp': awg2_list,
+        'subfolder': dataTT_subfolder_list,
+        'data_range_cal': dataTT_range_cal_list,
+        'data_rms_cal': dataTT_rms_cal_list,
+        'data_unique_cal': dataTT_unique_cal_list,
+        'data_ENOB_cal': dataTT_ENOB_cal_list,
+        'data_SNDR_cal': dataTT_SNDR_cal_list,
+        'data_SFDR_cal': dataTT_SFDR_cal_list,
+        'data_SNR_cal': dataTT_SNR_cal_list,
+        'data_SDR_cal': dataTT_SDR_cal_list,
+        'data_range_odacZS': dataTT_range_odacZS_list,
+        'data_unique_odacZS': dataTT_unique_odacZS_list,
+        'data_ENOB_odacZS': dataTT_ENOB_odacZS_list,
+        'data_SNDR_odacZS': dataTT_SNDR_odacZS_list,
+        'data_SFDR_odacZS': dataTT_SFDR_odacZS_list,
+        'data_SNR_odacZS': dataTT_SNR_odacZS_list,
+        'data_SDR_odacZS': dataTT_SDR_odacZS_list,
+        'data_range_odacMS': dataTT_range_odacMS_list,
+        'data_unique_odacMS': dataTT_unique_odacMS_list,
+        'data_ENOB_odacMS': dataTT_ENOB_odacMS_list,
+        'data_SNDR_odacMS': dataTT_SNDR_odacMS_list,
+        'data_SFDR_odacMS': dataTT_SFDR_odacMS_list,
+        'data_SNR_odacMS': dataTT_SNR_odacMS_list,
+        'data_SDR_odacMS': dataTT_SDR_odacMS_list,
+        'data_range_odacFS': dataTT_range_odacFS_list,
+        'data_unique_odacFS': dataTT_unique_odacFS_list,
+        'data_ENOB_odacFS': dataTT_ENOB_odacFS_list,
+        'data_SNDR_odacFS': dataTT_SNDR_odacFS_list,
+        'data_SFDR_odacFS': dataTT_SFDR_odacFS_list,
+        'data_SNR_odacFS': dataTT_SNR_odacFS_list,
+        'data_SDR_odacFS': dataTT_SDR_odacFS_list
+    }
+    df = pd.DataFrame.from_dict(data)
+    df.to_csv(run_dir+"/sweep_AWGTT.csv")    
+    # Do not open plots, release memory
+    plt.close('all')
     
     
 
 
     ## Cleanup
-    #awg1.setOutput(False)
-    #awg2.setOutput(False)
-    #awg1.close()
-    #awg2.close()
+    awg1.setOutput(False)
+    awg2.setOutput(False)
+    awg1.close()
+    awg2.close()
     fpga.close()
 
 
