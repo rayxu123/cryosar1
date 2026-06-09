@@ -584,8 +584,8 @@ if __name__ == "__main__":
     awg2_slope = p2[0]
     awg1_ratio = awg1_slope/(awg1_slope+awg2_slope)
     awg2_ratio = awg2_slope/(awg1_slope+awg2_slope)
-    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)*0.95
-    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)*0.95
+    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)*0.9
+    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)*0.9
     
     
     

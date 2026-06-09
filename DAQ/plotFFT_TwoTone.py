@@ -115,8 +115,7 @@ def plotFFT_TwoTone(data, fs, plot=True, showNow=True, title=None, save=None, nu
         hd3.append(np.abs(2*f1_idx-f2_idx))
         hd3.append(np.abs(2*f2_idx+f1_idx))
         hd3.append(np.abs(2*f1_idx+f2_idx))
-        print(f1_idx)
-        print(f2_idx)
+
     
         
         
