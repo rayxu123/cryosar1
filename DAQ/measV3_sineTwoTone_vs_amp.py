@@ -25,6 +25,7 @@ import csv
 sys.path.insert(0, '../SRead')
 import fpga, calibration, plotFFT
 from plotFFT import plotFFT
+from plotFFT_TwoTone import plotFFT_TwoTone
 import matplotlib.pyplot as plt     # DNF: python3-matplotlib
 import logger
 import pandas as pd
@@ -583,8 +584,8 @@ if __name__ == "__main__":
     awg2_slope = p2[0]
     awg1_ratio = awg1_slope/(awg1_slope+awg2_slope)
     awg2_ratio = awg2_slope/(awg1_slope+awg2_slope)
-    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)
-    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)
+    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)*0.95
+    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)*0.95
     
     
     
@@ -685,7 +686,7 @@ if __name__ == "__main__":
         # Datapoint statistics, calibrated ODAC
         datacal_unique = len(np.unique(np.round(data)))
         datacal_range = np.ptp(data)
-        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_cal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT_TwoTone(data, fpga.SER_RATE/8, plot=True, showNow=False, annotate=False, title="Calibrated, 12b levels", numbins=3, numharm=3, save=run_dir+"/"+rawdata_awgamp+"/data_cal.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
         dataTT_range_cal_list.append(datacal_range)
@@ -718,7 +719,7 @@ if __name__ == "__main__":
         # Datapoint statistics, zero ODAC
         datacal_unique = len(np.unique(np.round(data)))
         datacal_range = np.ptp(data)
-        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacZS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT_TwoTone(data, fpga.SER_RATE/8, plot=True, showNow=False, annotate=False, title="Calibrated, 12b levels", numbins=3, numharm=3, save=run_dir+"/"+rawdata_awgamp+"/data_odacZS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
         dataTT_range_odacZS_list.append(datacal_range)
@@ -749,7 +750,7 @@ if __name__ == "__main__":
         # Datapoint statistics, mid-scale ODAC
         datacal_unique = len(np.unique(np.round(data)))
         datacal_range = np.ptp(data)
-        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacMS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT_TwoTone(data, fpga.SER_RATE/8, plot=True, showNow=False, annotate=False, title="Calibrated, 12b levels", numbins=3, numharm=3, save=run_dir+"/"+rawdata_awgamp+"/data_odacMS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
         dataTT_range_odacMS_list.append(datacal_range)
@@ -780,7 +781,7 @@ if __name__ == "__main__":
         # Datapoint statistics, full-scale ODAC
         datacal_unique = len(np.unique(np.round(data)))
         datacal_range = np.ptp(data)
-        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT(data, fpga.SER_RATE/8, plot=True, showNow=False, title="Calibrated, 12b levels", numbins=3, numharm=11, save=run_dir+"/"+rawdata_awgamp+"/data_odacFS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
+        datacal_ENOB, datacal_SNDR, datacal_SFDR, datacal_SNR, datacal_SDR, _, _, _, _, _ = plotFFT_TwoTone(data, fpga.SER_RATE/8, plot=True, showNow=False, annotate=False, title="Calibrated, 12b levels", numbins=3, numharm=3, save=run_dir+"/"+rawdata_awgamp+"/data_odacFS.png")    # Uncomment this for 12b code levels, but floating point arithmetic
         # Do not open plots, release memory
         plt.close('all')
         dataTT_range_odacFS_list.append(datacal_range)
