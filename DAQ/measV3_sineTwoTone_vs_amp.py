@@ -584,9 +584,8 @@ if __name__ == "__main__":
     awg2_slope = p2[0]
     awg1_ratio = awg1_slope/(awg1_slope+awg2_slope)
     awg2_ratio = awg2_slope/(awg1_slope+awg2_slope)
-    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)*0.9
-    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)*0.9
-    
+    awg1_FS = awg1_slope*awg1_ratio*(cal_fs_LSB)
+    awg2_FS = awg2_slope*awg2_ratio*(cal_fs_LSB)    
     
     
     awg1.initSine(awgFreq1, awg1_FS)
@@ -595,7 +594,7 @@ if __name__ == "__main__":
     
     
     ## Make amplitude sweep list for two-tone sweep first
-    awg_list = np.logspace(np.log10(cal_fs_LSB*0.001), np.log10(cal_fs_LSB), num=args.numpts, endpoint=True)
+    awg_list = np.logspace(np.log10(cal_fs_LSB*0.001), np.log10(cal_fs_LSB*0.95), num=args.numpts, endpoint=True)
     np.concatenate([awg_list, [cal_fs_LSB*n1dB]])
     np.concatenate([awg_list, [cal_fs_LSB*n3dB]])
     np.concatenate([awg_list, [cal_fs_LSB*n6dB]])

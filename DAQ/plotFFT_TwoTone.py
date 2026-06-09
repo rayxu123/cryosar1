@@ -54,7 +54,6 @@ def plotFFT_TwoTone(data, fs, plot=True, showNow=True, title=None, save=None, nu
     
     # Calculate SFDR
     SFDR = -np.amax(PSD[fmask])
-    print(SFDR)
     
     
     # Calculate SNDR
