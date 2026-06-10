@@ -106,6 +106,7 @@ def plotFFT_TwoTone(data, fs, plot=True, showNow=True, title=None, save=None, nu
         hd2.append(f2_idx*2)
         hd2.append(np.abs(f2_idx-f1_idx))
         hd2.append(np.abs(f2_idx+f1_idx))
+        hd2 = np.mod(hd2, len(freq))    # FIXME
     if numharm >= 3:
         hd3 = []
         hd3.append(f1_idx*3)
@@ -114,6 +115,7 @@ def plotFFT_TwoTone(data, fs, plot=True, showNow=True, title=None, save=None, nu
         hd3.append(np.abs(2*f1_idx-f2_idx))
         hd3.append(np.abs(2*f2_idx+f1_idx))
         hd3.append(np.abs(2*f1_idx+f2_idx))
+        hd3 = np.mod(hd3, len(freq))    # FIXME
 
     
         
